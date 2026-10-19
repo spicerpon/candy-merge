@@ -152,3 +152,32 @@ button{font-family:var(--font-display);cursor:pointer;border:0;background:none;c
 :lang(ja) .card p{line-break:strict}
 .card p{text-wrap:pretty}
 :lang(ja){--font-display:'Fredoka','Noto Sans JP','Hiragino Sans','Yu Gothic UI','Meiryo',system-ui,sans-serif;--font-body:'Nunito','Noto Sans JP','Hiragino Sans','Yu Gothic UI','Meiryo',system-ui,sans-serif}
+
+/* ---------- alignment polish ---------- */
+.score{transform-origin:50% 100%;transition:none}
+.score.punch{transform:none;animation:punch .28s cubic-bezier(.2,1.4,.4,1)}
+@keyframes punch{0%{transform:scale(1)}35%{transform:scale(1.16)}100%{transform:scale(1)}}
+.tb-center{gap:calc(10px*var(--s))}
+.btn,.btn.big{padding-bottom:calc(10px*var(--s))}
+.btn.small{padding-bottom:calc(6px*var(--s))}
+.icon-btn,.item{padding-bottom:calc(8px*var(--s))}
+.auto{padding-bottom:calc(6px*var(--s))}
+.toggle{justify-content:center;padding-left:calc(44px*var(--s));padding-right:calc(44px*var(--s))}
+.toggle b{position:absolute;right:calc(24px*var(--s));top:50%;transform:translateY(-50%);margin-left:0}
+.pill.gems .plus{display:flex;align-items:center;justify-content:center;flex:none;padding:0 0 calc(3px*var(--s))}
+.pill.gems .plus svg{width:58%;height:58%;display:block}
+.close{padding-bottom:calc(5px*var(--s))}
+.close svg{width:44%;height:44%;display:block}
+.right-tools{align-items:flex-end}
+.tool{height:calc(150px*var(--s));justify-content:flex-end}
+.tool .auto{margin-bottom:calc(24px*var(--s))}
+
+/* ---------- spacing polish ---------- */
+.card{padding-top:calc(140px*var(--s));padding-bottom:calc(48px*var(--s));gap:calc(24px*var(--s))}
+.ribbon{font-size:calc(46px*var(--s));padding:0 calc(52px*var(--s));height:calc(100px*var(--s))}
+.close{top:calc(16px*var(--s));right:calc(16px*var(--s));width:calc(84px*var(--s));height:calc(84px*var(--s))}
+.card .scroll{max-height:calc(1000px*var(--s))} .grid{max-height:none;overflow:visible}
+.card .scroll{scrollbar-width:none} .card .scroll::-webkit-scrollbar{display:none}
+.result-title{margin:calc(8px*var(--s)) 0}
+.title-card{gap:calc(30px*var(--s))}
+.big-score{margin:calc(6px*var(--s)) 0}
