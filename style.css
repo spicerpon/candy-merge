@@ -183,3 +183,4 @@ button{font-family:var(--font-display);cursor:pointer;border:0;background:none;c
 .big-score{margin:calc(6px*var(--s)) 0}
 .btn small{font-size:.62em;opacity:.8;font-weight:700;margin-left:calc(6px*var(--s))}
 .btn.tight{font-size:calc(37px*var(--s))}
+#toast{top:calc(385px*var(--s))}
