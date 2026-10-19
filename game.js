@@ -1,4 +1,4 @@
-/* Candy Merge 2048 — © KOGAMES. Built 2026-10-19T12:52Z. Source: src/ */
+/* Candy Merge 2048 — © KOGAMES. Built 2026-10-19T14:33Z. Source: src/ */
 (function(){'use strict';
 // ===== physics.js =====
 // Lightweight position-based circle physics tuned for Suika-style merge games.
@@ -183,12 +183,17 @@ const T = {
   last_chance_desc: ['범위를 선택해 캔디를 제거하고<br>이어서 플레이하세요!', 'Pick an area to clear candies<br>and keep playing!', '範囲を選んでキャンディを消し<br>続けてプレイ！'],
   use_gems:       ['{0} 사용', 'USE {0}', '{0} 使う'],
   free_continue:  ['무료 이어하기', 'FREE CONTINUE', '無料で続ける'],
+  ad_continue:    ['광고 보고 이어하기', 'WATCH AD · CONTINUE', '広告を見て続ける'],
+  ad_gems:        ['광고 보고', 'WATCH AD', '広告を見て'],
+  ad_limit:       ['오늘 광고 보상을 모두 받았어요 ({0}/{1})', 'Daily ad rewards used ({0}/{1})', '今日の広告報酬は受け取り済み ({0}/{1})'],
+  ad_unavailable: ['지금은 볼 수 있는 광고가 없어요', 'No ad available right now', '今は見られる広告がありません'],
+  ad_not_finished:['광고를 끝까지 봐야 보상을 받아요', 'Finish the ad to get the reward', '最後まで見ると報酬がもらえます'],
   select_remove_area: ['제거할 범위를 선택하세요', 'Select the area to remove', '消す範囲を選んでください'],
   pick_one:       ['제거할 캔디를 탭하세요', 'Tap a candy to remove', '消すキャンディをタップ'],
   time_reward:    ['시간 보상', 'TIME REWARD', '時間報酬'],
   time_reward_desc: ['{0}분마다 보상 상자가 열려요!', 'A chest opens every {0} min!', '{0}分ごとに宝箱が開く！'],
   confirm: ['확인','OK','OK'], cancel: ['취소','CANCEL','キャンセル'],
-  shop:           ['보석 상점', 'GEM SHOP', 'ジェムショップ'],
+  shop:           ['보석 얻기', 'GET GEMS', 'ジェムを集める'],
   gems:           ['보석', 'GEMS', 'ジェム'],
   not_enough_gems:['보석이 부족합니다', 'Not enough gems', 'ジェムが足りません'],
   ranking:        ['기록', 'RECORDS', '記録'],
@@ -214,7 +219,7 @@ const T = {
   reset_data:     ['데이터 초기화', 'RESET DATA', 'データ初期化'],
   reset_confirm:  ['모든 기록과 보석이 삭제됩니다. 계속할까요?', 'All records and gems will be erased. Continue?', 'すべての記録とジェムが消えます。続けますか？'],
   back_home:      ['KOGAMES 홈', 'KOGAMES Home', 'KOGAMESホーム'],
-  earn_gems_hint: ['보석은 플레이 종료 보상, 새 캔디 발견, 수박 합치기, 일일 보너스, 시간 보상으로 모을 수 있어요.', 'Earn gems from game rewards, new candies, watermelon merges, daily bonus and the time chest.', 'ジェムはプレイ報酬・新キャンディ発見・スイカ合体・デイリー・時間報酬で貯まります。'],
+  earn_gems_hint: ['보석은 광고 시청, 플레이 종료 보상, 새 캔디 발견, 수박 합치기, 일일 보너스, 시간 보상으로 모을 수 있어요.', 'Earn gems by watching ads, game rewards, new candies, watermelon merges, daily bonus and the time chest.', 'ジェムは広告視聴・プレイ報酬・新キャンディ発見・スイカ合体・デイリー・時間報酬で貯まります。'],
   candy_names: [
     ['블루베리 캔디','체리 캔디','포도 캔디','레몬 캔디','오렌지 캔디','청사과 캔디','복숭아 캔디','코코넛 캔디','파인애플 캔디','멜론 캔디','수박 캔디'],
     ['Blueberry','Cherry','Grape','Lemon','Orange','Apple','Peach','Coconut','Pineapple','Melon','Watermelon'],
@@ -244,10 +249,11 @@ function candyName(level) { return T.candy_names[cur][level]; }
 // Local-only persistence: localStorage with cookie fallback. No server, no DB.
 const KEY = 'candymerge_save_v1';
 const DEFAULT = () => ({
-  gems: 300, best: 0, discovered: 1, sound: true, vibration: true, lang: null, autoFire: false,
+  gems: 100, best: 0, discovered: 1, sound: true, vibration: true, lang: null, autoFire: false,
   lastTimeReward: 0, lastDaily: '', games: 0, merges: 0, watermelons: 0,
   records: [],            // [{score, date, merges}] most recent first (max 10)
   weekKey: '', weekBest: 0,
+  adDay: '', adCount: 0,     // rewarded-ad gem claims today
 });
 
 function readRaw() {
@@ -341,6 +347,68 @@ const Audio = {
   boom() { this.noise(0.5, 0.5); this.tone({ type: 'sine', f0: 120, f1: 40, dur: 0.5, vol: 0.5 }); },
   haptic(ms) { if (!this.vibrate) return; try { navigator.vibrate && navigator.vibrate(ms); } catch (e) {} },
 };
+// ===== ads.js =====
+// Google H5 Games Ads (Ad Placement API) — rewarded + interstitial. No SDK beyond adsbygoogle.js.
+// Everything degrades gracefully: with an ad blocker or before AdSense approval, reward() resolves 'unavailable'
+// and interstitial() resolves immediately, so the game never hangs on ads.
+const Ads = {
+  client: '', loaded: false, testing: false, busy: false, onPause: null, onResume: null,
+  init(client, { sound = true, test = false, frequencyHint = '60s' } = {}) {
+    this.client = client; this.testing = test;
+    if (document.querySelector('script[data-h5-ads]')) return;
+    window.adsbygoogle = window.adsbygoogle || [];
+    if (!window.adBreak) { window.adBreak = window.adConfig = function (o) { window.adsbygoogle.push(o); }; }
+    const s = document.createElement('script');
+    s.async = true; s.crossOrigin = 'anonymous'; s.dataset.h5Ads = '1';
+    s.dataset.adFrequencyHint = frequencyHint;
+    if (test) s.dataset.adbreakTest = 'on';
+    s.src = 'https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=' + encodeURIComponent(client);
+    s.onload = () => { this.loaded = true; };
+    document.head.appendChild(s);
+    window.adConfig({ preloadAdBreaks: 'on', sound: sound ? 'on' : 'off', onReady: () => { this.loaded = true; } });
+  },
+  setSound(on) { try { window.adConfig && window.adConfig({ sound: on ? 'on' : 'off' }); } catch (e) {} },
+  available() { return !!(window.adsbygoogle && (window.adsbygoogle.loaded || this.loaded)); },
+
+  // Rewarded ad. Resolves 'viewed' | 'dismissed' | 'unavailable'.
+  reward(name) {
+    return new Promise((resolve) => {
+      if (this.busy || !this.available()) { resolve('unavailable'); return; }
+      this.busy = true; let offered = false, done = false, paused = false;
+      const finish = (st) => { if (done) return; done = true; this.busy = false; clearTimeout(tm); if (paused) { paused = false; this.onResume && this.onResume(); } resolve(st); };
+      const tm = setTimeout(() => { if (!offered) finish('unavailable'); }, 6000);
+      try {
+        window.adBreak({
+          type: 'reward', name,
+          beforeReward: (showAdFn) => { offered = true; clearTimeout(tm); try { showAdFn(); } catch (e) { finish('unavailable'); } },
+          beforeAd: () => { paused = true; this.onPause && this.onPause(); },
+          afterAd: () => { if (paused) { paused = false; this.onResume && this.onResume(); } },
+          adDismissed: () => finish('dismissed'),
+          adViewed: () => finish('viewed'),
+          adBreakDone: (info) => { const st = info && info.breakStatus; if (!offered) finish('unavailable'); else finish(st === 'viewed' ? 'viewed' : 'dismissed'); },
+        });
+      } catch (e) { finish('unavailable'); }
+    });
+  },
+
+  // Interstitial ("next" placement). Always resolves; frequency is managed by Google.
+  interstitial(name) {
+    return new Promise((resolve) => {
+      if (this.busy || !this.available()) { resolve(false); return; }
+      this.busy = true; let shown = false, done = false, paused = false;
+      const finish = () => { if (done) return; done = true; this.busy = false; clearTimeout(tm); if (paused) { paused = false; this.onResume && this.onResume(); } resolve(shown); };
+      const tm = setTimeout(finish, shown ? 60000 : 2500);
+      try {
+        window.adBreak({
+          type: 'next', name,
+          beforeAd: () => { shown = true; paused = true; clearTimeout(tm); this.onPause && this.onPause(); },
+          afterAd: () => { if (paused) { paused = false; this.onResume && this.onResume(); } },
+          adBreakDone: () => finish(),
+        });
+      } catch (e) { finish(); }
+    });
+  },
+};
 // ===== main.js =====
 // ===================== Candy Merge 2048 — main =====================
 const CFG = {
@@ -349,15 +417,16 @@ const CFG = {
     { r: 0.70, s: 15, c: '#FF8C1A' }, { r: 0.86, s: 21, c: '#8FE03A' }, { r: 0.95, s: 28, c: '#FF9A8A' }, { r: 1.18, s: 36, c: '#C27A3C' },
     { r: 1.36, s: 45, c: '#FFB31A' }, { r: 1.56, s: 55, c: '#4FDDAA' }, { r: 1.72, s: 66, c: '#2FB857' },
   ],
-  maxLevel: 10, scoreMul: 2, wmBonus: 100, wmGems: 5, spawnMax: 4,
+  maxLevel: 10, scoreMul: 2, wmBonus: 100, wmGems: 10, spawnMax: 4,
   jar: { left: -3.6, right: 3.6, top: 0, floor: 9.0, dropY: -0.8, deadY: 0.4, grace: 1.2 },
   keySpeed: 7.5,            // world units per second for keyboard aiming
   physics: { gravity: 24, restitution: 0.08, friction: 0.3, maxPush: 6, maxBounce: 3, maxSpeed: 22 },
   dropCooldown: 0.55, autoFireInterval: 1.4,
-  startGems: 300, shakeCost: 30, shakeFree: 1, shakeForce: 8, removeCost: 20, removeMax: 3,
+  shakeCost: 30, shakeFree: 1, shakeForce: 8, removeCost: 20, removeMax: 3,
   continueCosts: [100, 200, 300, 500, 800], freeContinues: 1, continueRadius: 1.6, invincible: 3,
-  timeRewardMin: 30, timeRewardGems: 15, dailyGems: 20, newRecordGems: 5, discoverGems: 3,
-  endBase: 3, endPer1000: 1, endCap: 15,
+  timeRewardMin: 30, timeRewardGems: 10, dailyGems: 10, newRecordGems: 5, discoverGems: 3,
+  endBase: 2, endPerPts: 1500, endCap: 10,
+  ads: { client: 'ca-pub-1318477289708440', gems: 20, gemsPerDay: 5, interstitialMinPlay: 20 },
 };
 
 const SPR = 512 / 392; // sprite px radius of the puck face vs. canvas half-size
@@ -525,10 +594,10 @@ function continueGame(free) {
 function finishGame() {
   setState('result');
   Save.addRecord(G.score, G.merges);
-  let gems = Math.min(CFG.endCap, CFG.endBase + Math.floor(G.score / 1000) * CFG.endPer1000);
+  let gems = Math.min(CFG.endCap, CFG.endBase + Math.floor(G.score / CFG.endPerPts));
   if (G.isNewRecord) gems += CFG.newRecordGems;
   G.endGems = gems; Save.addGems(gems); Save.save();
-  UI.showResult();
+  if (G.time >= CFG.ads.interstitialMinPlay) Ads.interstitial('game_over').then(() => UI.showResult()); else UI.showResult();
 }
 
 // ---------------- remove area / pick one / shake ----------------
@@ -834,7 +903,7 @@ const UI = {
     const card = this.open(t('menu'), 'var(--green)');
     card.appendChild(this.btn(t('resume'), 'c-green wide', () => this.close()));
     card.appendChild(this.btn(t('restart'), 'c-orange wide', () => { this.closeAll(); startGame(); }));
-    card.appendChild(this.toggleBtn(t('sound'), () => Save.d.sound, v => { Save.d.sound = v; Audio.enabled = v; Save.save(); }));
+    card.appendChild(this.toggleBtn(t('sound'), () => Save.d.sound, v => { Save.d.sound = v; Audio.enabled = v; Save.save(); Ads.setSound(v); }));
     card.appendChild(this.toggleBtn(t('vibration'), () => Save.d.vibration, v => { Save.d.vibration = v; Audio.vibrate = v; Save.save(); }));
     const lb = this.btn(`${t('language')}: ${LANG_NAMES[lang()]}`, 'c-blue wide', () => { const i = (LANGS.indexOf(lang()) + 1) % LANGS.length; setLang(LANGS[i]); Save.d.lang = LANGS[i]; Save.save(); this.applyTexts(); this.closeAll(); this.showMenu(); });
     card.appendChild(lb);
@@ -867,7 +936,15 @@ const UI = {
     card.appendChild(this.btn(this.gemHtml(t('use_gems', cost)), 'c-green wide', () => {
       if (Save.spendGems(cost)) { this.closeAll(); continueGame(false); } else { this.toast(t('not_enough_gems')); this.showShop(); }
     }));
-    if (G.adContinues < CFG.freeContinues) card.appendChild(this.btn('🎁 ' + t('free_continue'), 'c-blue wide', () => { this.closeAll(); continueGame(true); }));
+    if (G.adContinues < CFG.freeContinues) {
+      const ab = this.btn('📺 ' + t('ad_continue'), 'c-blue wide tight', async () => {
+        ab.disabled = true;
+        const st = await Ads.reward('continue');
+        if (st === 'viewed' || st === 'unavailable') { this.closeAll(); continueGame(true); }   // no fill → still free (never punish the player for our ad gaps)
+        else { ab.disabled = false; this.toast(t('ad_not_finished')); }
+      });
+      card.appendChild(ab);
+    }
   },
 
   // ---- result ----
@@ -915,6 +992,16 @@ const UI = {
     card.appendChild(this.el('div', 'gemrow', `<img src="assets/gem.png" alt=""> ${Save.d.gems.toLocaleString()}`));
     card.appendChild(this.el('p', '', t('earn_gems_hint')));
     const ready = Save.timeRewardLeftMs(CFG.timeRewardMin) === 0;
+    const today = new Date().toISOString().slice(0, 10); if (Save.d.adDay !== today) { Save.d.adDay = today; Save.d.adCount = 0; Save.save(); }
+    const left = CFG.ads.gemsPerDay - Save.d.adCount;
+    const gb = this.btn('📺 ' + t('ad_gems') + ' ' + this.gemHtml('+' + CFG.ads.gems) + ` <small>${Save.d.adCount}/${CFG.ads.gemsPerDay}</small>`, left > 0 ? 'c-green wide' : 'c-gray wide', async () => {
+      if (left <= 0) { this.toast(t('ad_limit', Save.d.adCount, CFG.ads.gemsPerDay)); return; }
+      gb.disabled = true;
+      const st = await Ads.reward('gems');
+      if (st === 'viewed') { Save.d.adCount++; Save.addGems(CFG.ads.gems); Audio.coin(); burstScreen(); this.toast(t('gem_bonus_end', CFG.ads.gems)); this.closeAll(); this.showShop(); }
+      else { gb.disabled = false; this.toast(t(st === 'dismissed' ? 'ad_not_finished' : 'ad_unavailable')); }
+    });
+    card.appendChild(gb);
     card.appendChild(this.btn('🎁 ' + t('time_reward') + (ready ? '' : ' ⏳'), ready ? 'c-orange wide' : 'c-gray wide', () => this.showTimeReward()));
     card.appendChild(this.btn(t('confirm'), 'c-yellow wide', () => this.close()));
   },
@@ -954,6 +1041,9 @@ function burstScreen() { const [cx, cy] = S2W(View.w / 2, View.h / 2); burst(cx,
 (function boot() {
   Save.load(); initLang(Save.d.lang); setLang(lang());
   Audio.enabled = Save.d.sound; Audio.vibrate = Save.d.vibration;
+  Ads.onPause = () => { G._adPrevPaused = G.paused; G.paused = true; G._adPrevSound = Audio.enabled; Audio.enabled = false; };
+  Ads.onResume = () => { G.paused = !!G._adPrevPaused; Audio.enabled = G._adPrevSound !== undefined ? G._adPrevSound : Save.d.sound; G.lastFrame = 0; };
+  Ads.init(CFG.ads.client, { sound: Save.d.sound, test: location.hostname !== 'kogames.dev' || /[?&]adtest=1/.test(location.search) });
   resize(); UI.init(); window.__G = G; window.__dbg = { triggerGameOver, continueGame, finishGame, UI, Save, CFG }; // debug hooks
   loadAssets().then(() => { UI.refreshEvo(); });
   if (location.hash === '#about' || location.hash === '#howto') setTimeout(() => UI.showHowTo(), 300);
