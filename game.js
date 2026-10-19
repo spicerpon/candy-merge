@@ -1,4 +1,4 @@
-/* Candy Merge 2048 — © KOGAMES. Built 2026-10-19T08:52Z. Source: src/ */
+/* Candy Merge 2048 — © KOGAMES. Built 2026-10-19T11:56Z. Source: src/ */
 (function(){'use strict';
 // ===== physics.js =====
 // Lightweight position-based circle physics tuned for Suika-style merge games.
@@ -145,8 +145,8 @@ class World {
 // ===== i18n.js =====
 // ko / en / ja
 const T = {
-  title:          ['캔디 머지 2048', 'Candy Merge 2048', 'キャンディマージ2048'],
-  tagline:        ['같은 캔디를 합쳐 수박 캔디를 만들어 보세요!', 'Merge matching candies and make the Watermelon Candy!', '同じキャンディを合わせてスイカキャンディを作ろう！'],
+  title:          ['캔디 머지 2048', 'Candy Merge 2048', 'キャンディマージ 2048'],
+  tagline:        ['같은 캔디를 합쳐 수박 캔디를 만들어 보세요!', 'Merge matching candies and make the Watermelon Candy!', '同じキャンディを合わせてスイカを作ろう！'],
   play:           ['플레이', 'PLAY', 'プレイ'],
   score:          ['점수', 'SCORE', 'スコア'],
   best:           ['최고', 'BEST', 'ベスト'],
@@ -839,7 +839,7 @@ const UI = {
     const top = this.el('div', 'row'); top.style.justifyContent = 'space-between';
     const mk = (cls, svg, fn) => { const b = document.createElement('button'); b.className = 'icon-btn ' + cls; b.innerHTML = svg; b.onclick = () => { Audio.click(); fn(); }; return b; };
     top.appendChild(mk('c-blue', '<svg viewBox="0 0 24 24"><path d="M4 13h4v7H4zM10 4h4v16h-4zM16 9h4v11h-4z"/></svg>', () => this.showRecords()));
-    const title = this.el('div', '', t('result')); title.style.cssText = 'font-family:var(--font-display);font-weight:700;font-size:calc(60px*var(--s));color:#fff;text-shadow:0 4px 0 #5B3B1D';
+    const title = this.el('div', 'result-title', t('result'));
     top.appendChild(title);
     top.appendChild(mk('c-pink', '<svg viewBox="0 0 24 24"><circle cx="18" cy="5" r="2.6"/><circle cx="6" cy="12" r="2.6"/><circle cx="18" cy="19" r="2.6"/><path d="M8.3 10.8 15.7 6.3M8.3 13.2l7.4 4.5" stroke-width="2.2" stroke="currentColor" fill="none"/></svg>', () => this.share()));
     card.appendChild(top);
@@ -888,7 +888,7 @@ const UI = {
     card.appendChild(this.el('h3', '', t('recent_records')));
     const list = this.el('div', 'list scroll');
     if (!Save.d.records.length) list.appendChild(this.el('p', '', t('no_records')));
-    Save.d.records.forEach((r, i) => { list.appendChild(this.el('div', 'rec' + (r.score === Save.d.best ? ' top' : ''), `<span class="idx">${i + 1}</span><span>${r.score.toLocaleString()}</span><span class="dt">${r.date}</span>`)); });
+    Save.d.records.forEach((r, i) => { list.appendChild(this.el('div', 'rec' + (r.score === Save.d.best ? ' top' : ''), `<span class="idx">${i + 1}</span><span class="sc">${r.score.toLocaleString()}</span><span class="dt">${r.date}</span>`)); });
     card.appendChild(list);
   },
 
