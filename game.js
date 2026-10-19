@@ -1,4 +1,4 @@
-/* Candy Merge 2048 — © KOGAMES. Built 2026-10-19T11:56Z. Source: src/ */
+/* Candy Merge 2048 — © KOGAMES. Built 2026-10-19T12:24Z. Source: src/ */
 (function(){'use strict';
 // ===== physics.js =====
 // Lightweight position-based circle physics tuned for Suika-style merge games.
@@ -768,7 +768,7 @@ const UI = {
     const dim = document.createElement('div'); dim.className = 'dim';
     const card = document.createElement('div'); card.className = 'card' + (wide ? ' wide' : '');
     if (title) { const rb = document.createElement('div'); rb.className = 'ribbon'; rb.style.setProperty('--c', color); rb.textContent = title; card.appendChild(rb); }
-    if (closable) { const x = document.createElement('button'); x.className = 'close'; x.innerHTML = '&times;'; x.onclick = () => { Audio.click(); this.close(dim); onClose && onClose(); }; card.appendChild(x); }
+    if (closable) { const x = document.createElement('button'); x.className = 'close'; x.innerHTML = '<svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18" stroke="currentColor" stroke-width="4.2" stroke-linecap="round" fill="none"/></svg>'; x.onclick = () => { Audio.click(); this.close(dim); onClose && onClose(); }; card.appendChild(x); }
     dim.appendChild(card); this.els.popups.appendChild(dim);
     const wasPlaying = G.state === 'playing'; if (wasPlaying) { G.paused = true; }
     dim._wasPlaying = wasPlaying; dim._onClose = onClose;
@@ -798,7 +798,7 @@ const UI = {
     card.appendChild(this.btn(t('restart'), 'c-orange wide', () => { this.closeAll(); startGame(); }));
     card.appendChild(this.toggleBtn(t('sound'), () => Save.d.sound, v => { Save.d.sound = v; Audio.enabled = v; Save.save(); }));
     card.appendChild(this.toggleBtn(t('vibration'), () => Save.d.vibration, v => { Save.d.vibration = v; Audio.vibrate = v; Save.save(); }));
-    const lb = this.btn(`${t('language')}: ${LANG_NAMES[lang()]}`, 'c-blue wide', () => { const i = (LANGS.indexOf(lang()) + 1) % LANGS.length; setLang(LANGS[i]); Save.d.lang = LANGS[i]; Save.save(); this.applyTexts(); lb.textContent = `${t('language')}: ${LANG_NAMES[lang()]}`; });
+    const lb = this.btn(`${t('language')}: ${LANG_NAMES[lang()]}`, 'c-blue wide', () => { const i = (LANGS.indexOf(lang()) + 1) % LANGS.length; setLang(LANGS[i]); Save.d.lang = LANGS[i]; Save.save(); this.applyTexts(); this.closeAll(); this.showMenu(); });
     card.appendChild(lb);
     card.appendChild(this.btn(t('how_to'), 'c-teal wide', () => this.showHowTo()));
     card.appendChild(this.btn(t('collection'), 'c-purple wide', () => this.showCollection()));
