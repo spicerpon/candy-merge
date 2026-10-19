@@ -1,4 +1,4 @@
-/* Candy Merge 2048 — © KOGAMES. Built 2026-10-19T12:24Z. Source: src/ */
+/* Candy Merge 2048 — © KOGAMES. Built 2026-10-19T12:33Z. Source: src/ */
 (function(){'use strict';
 // ===== physics.js =====
 // Lightweight position-based circle physics tuned for Suika-style merge games.
@@ -189,9 +189,9 @@ const T = {
   remove_one:     ['하나 제거', 'REMOVE', 'ひとつ消す'],
   free:           ['무료', 'FREE', '無料'],
   how_to:         ['조작법', 'HOW TO PLAY', '遊び方'],
-  how_to_desc:    ['좌우로 드래그해 위치를 정하고 손을 떼면 캔디가 떨어져요.<br>같은 캔디끼리 닿으면 더 큰 캔디로 합쳐지고, 수박 캔디 2개를 합치면 보너스!<br>캔디가 빨간 선 위에 머물면 게임 오버.',
-                   'Drag to aim, release to drop.<br>Two matching candies merge into a bigger one — merge two Watermelon Candies for a bonus!<br>If candies stay above the red line, it\'s game over.',
-                   'ドラッグで位置を決めて離すと落下。<br>同じキャンディ同士がくっつくと大きくなり、スイカ2個で大ボーナス！<br>赤い線の上に留まるとゲームオーバー。'],
+  how_to_desc:    ['좌우로 드래그해 위치를 정하고 손을 떼면 캔디가 떨어져요.<br>같은 캔디끼리 닿으면 더 큰 캔디로 합쳐지고, 수박 캔디 2개를 합치면 보너스!<br>캔디가 빨간 선 위에 머물면 게임 오버.<br>PC에서는 ← → 키로 이동, 스페이스바로 떨어뜨릴 수 있어요.',
+                   'Drag to aim, release to drop.<br>Two matching candies merge into a bigger one — merge two Watermelon Candies for a bonus!<br>If candies stay above the red line, it\'s game over.<br>On PC you can also use ← → to move and Space to drop.',
+                   'ドラッグで位置を決めて離すと落下。<br>同じキャンディ同士がくっつくと大きくなり、スイカ2個で大ボーナス！<br>赤い線の上に留まるとゲームオーバー。<br>PCでは ← → キーで移動、スペースで落とせます。'],
   gem_bonus_end:  ['보석 +{0}', 'Gems +{0}', 'ジェム +{0}'],
   settings:       ['설정', 'SETTINGS', '設定'],
   reset_data:     ['데이터 초기화', 'RESET DATA', 'データ初期化'],
@@ -334,6 +334,7 @@ const CFG = {
   ],
   maxLevel: 10, scoreMul: 2, wmBonus: 100, wmGems: 5, spawnMax: 4,
   jar: { left: -3.6, right: 3.6, top: 0, floor: 9.0, dropY: -0.8, deadY: 0.4, grace: 1.2 },
+  keySpeed: 7.5,            // world units per second for keyboard aiming
   physics: { gravity: 26, restitution: 0.12, friction: 0.28 },
   dropCooldown: 0.55, autoFireInterval: 1.4,
   startGems: 300, shakeCost: 30, shakeFree: 1, shakeForce: 8, removeCost: 20, removeMax: 3,
@@ -562,7 +563,7 @@ function onDown(e) {
   const [x, y] = pointerPos(e);
   if (G.state === 'playing') {
     if (y < CFG.jar.dropY - 1.6 || y > CFG.jar.floor + 1.2) return;
-    G.pointerDown = true; G.dragging = true; G.aimX = x; e.preventDefault();
+    G.pointerDown = true; G.dragging = true; G.keyAim = false; G.aimX = x; e.preventDefault();
   } else if (G.state === 'remove' || G.state === 'pick') { G.pointerDown = true; G.removePos = [clampJar(x, y)[0], clampJar(x, y)[1]]; e.preventDefault(); }
 }
 function onMove(e) {
@@ -581,7 +582,25 @@ function onUp(e) {
 function clampJar(x, y) { return [Math.min(CFG.jar.right, Math.max(CFG.jar.left, x)), Math.min(CFG.jar.floor, Math.max(CFG.jar.top - 0.5, y))]; }
 canvas.addEventListener('mousedown', onDown); window.addEventListener('mousemove', onMove); window.addEventListener('mouseup', onUp);
 canvas.addEventListener('touchstart', onDown, { passive: false }); window.addEventListener('touchmove', onMove, { passive: false }); window.addEventListener('touchend', onUp); window.addEventListener('touchcancel', onUp);
-window.addEventListener('keydown', (e) => { if (e.key === 'Escape') UI.onBack(); });
+// keyboard (desktop): ←/→ or A/D move the held candy, Space/↓/Enter drop it
+G.keys = { left: false, right: false }; G.keyAim = false;
+function keyDir(e) { const k = e.key; if (k === 'ArrowLeft' || k === 'a' || k === 'A') return 'left'; if (k === 'ArrowRight' || k === 'd' || k === 'D') return 'right'; return null; }
+function isDropKey(e) { return e.code === 'Space' || e.key === ' ' || e.key === 'ArrowDown' || e.key === 'Enter'; }
+window.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape') { UI.onBack(); return; }
+  if (e.target && /^(INPUT|TEXTAREA|SELECT)$/.test(e.target.tagName)) return;
+  if (G.paused || UI.popupStack.length) return;
+  const dir = keyDir(e);
+  if (dir && (G.state === 'playing' || G.state === 'remove' || G.state === 'pick')) { G.keys[dir] = true; G.keyAim = true; if (G.state === 'playing' && document.activeElement && document.activeElement.blur) document.activeElement.blur(); e.preventDefault(); return; }
+  if (isDropKey(e)) {
+    if (e.repeat) { e.preventDefault(); return; }
+    if (G.state === 'playing') { if (G.held && !G.pointerDown) { G.keyAim = true; Audio.init(); Audio.resume(); dropHeld(); } e.preventDefault(); }
+    else if (G.state === 'remove') { const cb = G.onRemove; G.onRemove = null; UI.hideHint(); cb && cb(G.removePos[0], G.removePos[1]); e.preventDefault(); }
+    else if (G.state === 'pick') { pickAt(G.removePos[0], G.removePos[1]); e.preventDefault(); }
+  }
+});
+window.addEventListener('keyup', (e) => { const dir = keyDir(e); if (dir) { G.keys[dir] = false; e.preventDefault(); } else if (isDropKey(e) && (G.state === 'playing' || G.state === 'remove' || G.state === 'pick')) e.preventDefault(); });
+window.addEventListener('blur', () => { G.keys.left = G.keys.right = false; });
 
 // ---------------- loop ----------------
 let acc = 0;
@@ -597,6 +616,8 @@ function update(dt) {
   G.time += dt;
   const sim = G.state === 'playing' || G.state === 'remove' || G.state === 'pick' || G.state === 'lastchance' || G.state === 'result';
   if (G.world && sim) {
+    if (G.state === 'playing' && !G.pointerDown && (G.keys.left || G.keys.right)) { const kv = CFG.keySpeed * dt * ((G.keys.right ? 1 : 0) - (G.keys.left ? 1 : 0)); G.aimX = clampX(G.aimX + kv, G.held ? G.held.r : 0.3); }
+    else if ((G.state === 'remove' || G.state === 'pick') && !G.pointerDown && (G.keys.left || G.keys.right)) { const kv = CFG.keySpeed * dt * ((G.keys.right ? 1 : 0) - (G.keys.left ? 1 : 0)); G.removePos = clampJar(G.removePos[0] + kv, G.removePos[1]); }
     if (G.held) { G.held.x = clampX(G.aimX, G.held.r); G.held.y = CFG.jar.dropY; }
     G.world.step(1 / 60); processMerges();
     for (const b of G.world.bodies) if (b.scale < 1) b.scale = Math.min(1, b.scale + dt * 4.5);
@@ -653,7 +674,7 @@ function render() {
     ctx.fillStyle = `rgba(255,60,80,${(G.state === 'lastchance' ? 0.9 : a * G.tickDanger).toFixed(3)})`; ctx.fillRect(dlx, dly - 0.03 * S, jw, 0.06 * S);
   }
   // guide line
-  if (G.state === 'playing' && G.held && (G.dragging || Save.d.autoFire)) {
+  if (G.state === 'playing' && G.held && (G.dragging || Save.d.autoFire || G.keyAim)) {
     const [gx, gy] = W2S(G.held.x, G.held.y + G.held.r); const [, fy] = W2S(0, J.floor);
     ctx.strokeStyle = 'rgba(255,150,30,0.85)'; ctx.lineWidth = 0.05 * S; ctx.setLineDash([0.18 * S, 0.12 * S]); ctx.beginPath(); ctx.moveTo(gx, gy); ctx.lineTo(gx, fy); ctx.stroke(); ctx.setLineDash([]);
   }
