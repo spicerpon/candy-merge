@@ -1,4 +1,4 @@
-/* Candy Merge 2048 — © KOGAMES. Built 2026-10-19T23:09Z. Source: src/ */
+/* Candy Merge 2048 — © KOGAMES. Built 2026-10-19T23:14Z. Source: src/ */
 (function(){'use strict';
 // ===== physics.js =====
 // Lightweight position-based circle physics tuned for Suika-style merge games.
@@ -546,7 +546,7 @@ function processMerges() {
     const [a, b] = mergeQueue.shift();
     if (a.dead || b.dead) { a.merging = b.merging = false; continue; }
     const lv = a.level; const mx = (a.x + b.x) / 2, my = (a.y + b.y) / 2;
-    const vx = (a.vx + b.vx) / 2 * 0.5, vy = (a.vy + b.vy) / 2 * 0.5 - 1.5;   // slight upward hop on merge
+    const vx = (a.vx + b.vx) / 2 * 0.3, vy = (a.vy + b.vy) / 2 * 0.3;
     G.world.remove(a); G.world.remove(b); G.merges++; Save.d.merges++;
     if (lv >= CFG.maxLevel) {
       const pts = (CFG.candies[lv].s + CFG.wmBonus) * CFG.scoreMul;
@@ -556,7 +556,7 @@ function processMerges() {
       continue;
     }
     const nl = lv + 1; const r = CFG.candies[nl].r;
-    const n = new Body(mx, my, r, nl); n.landed = true; n.vx = vx; n.vy = vy; n.scale = 0.55; n.scaleTo = 1.14; n.r = Math.max(a.r, b.r); n.tr = r; G.world.add(n);  // physics radius grows in so neighbours get nudged, not launched
+    const n = new Body(mx, my, r, nl); n.landed = true; n.vx = vx; n.vy = vy; n.scale = 0.55; n.r = Math.max(a.r, b.r); n.tr = r; G.world.add(n);  // physics radius grows in so neighbours get nudged, not launched
     // merge "pop": neighbours get a gentle shove away from the merge point (falls off with distance)
     const range = r + 1.0;
     for (const o of G.world.bodies) { if (o === n || o.held) continue; const dx = o.x - mx, dy = o.y - my; const d = Math.hypot(dx, dy); if (d > range + o.r || d < 1e-4) continue; const k = CFG.mergePop * (1 - Math.max(0, d - r) / (range - r + o.r)) / Math.max(0.6, o.mass / n.mass); o.vx += dx / d * k; o.vy += dy / d * k - k * 0.35; }
@@ -711,7 +711,7 @@ function update(dt) {
     else if ((G.state === 'remove' || G.state === 'pick') && !G.pointerDown && (G.keys.left || G.keys.right)) { const kv = CFG.keySpeed * dt * ((G.keys.right ? 1 : 0) - (G.keys.left ? 1 : 0)); G.removePos = clampJar(G.removePos[0] + kv, G.removePos[1]); }
     if (G.held) { G.held.x = clampX(G.aimX, G.held.r); G.held.y = CFG.jar.dropY; }
     G.world.step(1 / 60); processMerges();
-    for (const b of G.world.bodies) { const to = b.scaleTo || 1; if (b.scale < to) b.scale = Math.min(to, b.scale + dt * 5.5); else if (b.scale > 1) { b.scale = Math.max(1, b.scale - dt * 1.4); if (b.scale === 1) b.scaleTo = 1; } }   // merged candies overshoot a little, then settle
+    for (const b of G.world.bodies) if (b.scale < 1) b.scale = Math.min(1, b.scale + dt * 4.5);
   }
   if (G.state === 'playing') {
     // spawn next after cooldown / landing
