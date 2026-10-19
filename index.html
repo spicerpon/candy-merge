@@ -1,0 +1,121 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
+<title>Candy Merge 2048 — Free Suika-style Candy Merge Game (Play in Browser)</title>
+<meta name="description" content="Candy Merge 2048 is a free browser game: drop glossy fruit candies, merge matching ones into bigger candies and make the Watermelon Candy. No download, no sign-up, works on phone and desktop.">
+<link rel="canonical" href="https://kogames.dev/candy-merge/">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="KOGAMES">
+<meta property="og:title" content="Candy Merge 2048 — Free Candy Merge Game">
+<meta property="og:description" content="Drop. Merge. Make the Watermelon Candy! A free browser puzzle game — no download, no sign-up.">
+<meta property="og:url" content="https://kogames.dev/candy-merge/">
+<meta property="og:image" content="https://kogames.dev/candy-merge/assets/og.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Candy Merge 2048 — Free Candy Merge Game">
+<meta name="twitter:description" content="Drop. Merge. Make the Watermelon Candy! A free browser puzzle game.">
+<meta name="twitter:image" content="https://kogames.dev/candy-merge/assets/og.jpg">
+<meta name="theme-color" content="#6a2bd9">
+<link rel="icon" type="image/png" sizes="192x192" href="assets/icon-192.png">
+<link rel="apple-touch-icon" href="assets/icon-192.png">
+<meta name="google-adsense-account" content="ca-pub-1318477289708440">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "VideoGame",
+  "name": "Candy Merge 2048",
+  "url": "https://kogames.dev/candy-merge/",
+  "image": "https://kogames.dev/candy-merge/assets/og.jpg",
+  "description": "A free Suika-style merge puzzle played in the browser. Drop fruit candies, merge matching ones and make the Watermelon Candy.",
+  "genre": ["Puzzle", "Casual", "Merge"],
+  "playMode": "SinglePlayer",
+  "gamePlatform": "Web browser",
+  "applicationCategory": "GameApplication",
+  "operatingSystem": "Any",
+  "inLanguage": ["en", "ko", "ja"],
+  "isAccessibleForFree": true,
+  "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" },
+  "author": { "@type": "Organization", "name": "KOGAMES", "url": "https://kogames.dev/" },
+  "publisher": { "@type": "Organization", "name": "KOGAMES", "url": "https://kogames.dev/" }
+}
+</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Nunito:wght@600;700;800;900&display=swap">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div id="page">
+  <div id="stage" aria-label="Candy Merge 2048">
+    <canvas id="game"></canvas>
+
+    <!-- ===== HUD ===== -->
+    <div id="hud" hidden>
+      <div class="topbar">
+        <div class="tb-left">
+          <button class="icon-btn c-blue" id="btn-records" aria-label="Records"><svg viewBox="0 0 24 24"><path d="M4 13h4v7H4zM10 4h4v16h-4zM16 9h4v11h-4z"/></svg></button>
+          <button class="icon-btn c-teal" id="btn-collection" aria-label="Collection"><svg viewBox="0 0 24 24"><circle cx="7" cy="7" r="3.2"/><circle cx="17" cy="7" r="3.2"/><circle cx="7" cy="17" r="3.2"/><circle cx="17" cy="17" r="3.2"/></svg></button>
+        </div>
+        <div class="tb-center">
+          <div class="score" id="score">0</div>
+          <div class="pill best"><svg viewBox="0 0 24 24" class="crown"><path d="M3 18 2 7l5 4 5-7 5 7 5-4-1 11z"/><rect x="3" y="19" width="18" height="2.5" rx="1"/></svg><span id="best">0</span></div>
+          <div class="pill gems"><img src="assets/gem.png" alt="" class="gem-ic"><span id="gems">0</span><button class="plus" id="btn-shop" aria-label="Gems">+</button></div>
+        </div>
+        <div class="tb-right">
+          <button class="icon-btn c-pink" id="btn-share" aria-label="Share"><svg viewBox="0 0 24 24"><circle cx="18" cy="5" r="2.6"/><circle cx="6" cy="12" r="2.6"/><circle cx="18" cy="19" r="2.6"/><path d="M8.3 10.8 15.7 6.3M8.3 13.2l7.4 4.5" stroke-width="2.2" stroke="currentColor" fill="none"/></svg></button>
+          <button class="icon-btn c-green" id="btn-menu" aria-label="Menu"><svg viewBox="0 0 24 24"><rect x="4" y="6" width="16" height="2.6" rx="1.3"/><rect x="4" y="10.7" width="16" height="2.6" rx="1.3"/><rect x="4" y="15.4" width="16" height="2.6" rx="1.3"/></svg></button>
+        </div>
+      </div>
+      <div class="row2">
+        <div class="items">
+          <button class="item c-purple" id="btn-shake" aria-label="Shake">
+            <svg viewBox="0 0 24 24"><rect x="8" y="3" width="8" height="18" rx="2"/><path d="M4 8v8M20 8v8M2 10v4M22 10v4" stroke="currentColor" stroke-width="2" stroke-linecap="round" fill="none"/></svg>
+            <span class="cost"><img src="assets/gem.png" alt=""><b id="shake-cost">30</b></span>
+          </button>
+          <button class="item c-orange" id="btn-remove" aria-label="Remove one">
+            <svg viewBox="0 0 24 24"><path d="M9 21 6 15a1.6 1.6 0 0 1 2.8-1.4L10 15V5a1.5 1.5 0 0 1 3 0v6a1.4 1.4 0 0 1 2.6.6 1.4 1.4 0 0 1 2.6.8A1.4 1.4 0 0 1 20 14v3a4 4 0 0 1-4 4z"/></svg>
+            <span class="cost"><img src="assets/gem.png" alt=""><b id="remove-cost">20</b></span>
+          </button>
+        </div>
+        <div class="right-tools">
+          <div class="tool">
+            <button class="auto" id="btn-auto"><span id="auto-state">OFF</span></button>
+            <label id="auto-label">AUTO</label>
+          </div>
+          <div class="tool next">
+            <div class="next-circle"><img id="next-img" alt="" src=""></div>
+            <label id="next-label">NEXT</label>
+          </div>
+        </div>
+      </div>
+      <div class="hint" id="hint" hidden><span id="hint-text"></span><button class="btn small c-red" id="hint-cancel">CANCEL</button></div>
+      <div class="evobar" id="evobar"></div>
+    </div>
+
+    <!-- ===== TITLE ===== -->
+    <div id="title" class="screen">
+      <div class="title-card">
+        <div class="logo-candies" id="logo-candies"></div>
+        <h1 id="t-title">Candy Merge 2048</h1>
+        <p id="t-tagline" class="tagline"></p>
+        <button class="btn big c-pink" id="btn-play">PLAY</button>
+        <div class="title-links">
+          <button class="link" id="btn-howto">How to play</button>
+          <button class="link" id="btn-lang"></button>
+        </div>
+        <div class="title-best" id="title-best"></div>
+      </div>
+      <a class="home-link" href="/" id="home-link">KOGAMES</a>
+    </div>
+
+    <!-- ===== POPUP ROOT ===== -->
+    <div id="popups"></div>
+    <div id="toast" hidden></div>
+  </div>
+  <noscript><p style="color:#fff;text-align:center;padding:2rem">Candy Merge 2048 needs JavaScript to run.</p></noscript>
+</div>
+<script src="game.js"></script>
+</body>
+</html>
