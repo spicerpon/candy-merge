@@ -1,4 +1,4 @@
-/* Candy Merge 2048 — © KOGAMES. Built 2026-10-19T12:33Z. Source: src/ */
+/* Candy Merge 2048 — © KOGAMES. Built 2026-10-19T12:52Z. Source: src/ */
 (function(){'use strict';
 // ===== physics.js =====
 // Lightweight position-based circle physics tuned for Suika-style merge games.
@@ -8,7 +8,7 @@ class Body {
   constructor(x, y, r, level) {
     this.x = x; this.y = y; this.px = x; this.py = y;
     this.vx = 0; this.vy = 0;
-    this.r = r; this.level = level;
+    this.r = r; this.tr = r; this.level = level;   // tr: target radius (grows in after a merge)
     this.mass = Math.max(0.25, r * r * 2.0);
     this.invMass = 1 / this.mass;
     this.angle = Math.random() * Math.PI * 2; this.av = 0;
@@ -29,6 +29,9 @@ class World {
     this.restitution = opts.restitution ?? 0.12;
     this.friction = opts.friction ?? 0.28;
     this.drag = opts.drag ?? 0.004;
+    this.maxPush = opts.maxPush ?? 7;   // max speed a resting body can gain from overlap correction per substep (u/s)
+    this.maxSpeed = opts.maxSpeed ?? 22;
+    this.maxBounce = opts.maxBounce ?? 3;   // max rebound speed after a hard landing (u/s)
     this.bodies = [];
     this.onContact = null;   // (a, b) => void, called once per frame per same-level touching pair
     this.onLand = null;      // (body) => void
@@ -47,6 +50,7 @@ class World {
     const bs = this.bodies;
     // integrate
     for (const b of bs) {
+      if (b.r < b.tr) b.r = Math.min(b.tr, b.r + (b.tr - b.r) * Math.min(1, 14 * h) + 0.002);
       if (b.held) { b.px = b.x; b.py = b.y; b.vx = b.vy = 0; continue; }
       b.vy += this.gravity * h;
       const d = 1 - this.drag;
@@ -99,8 +103,21 @@ class World {
     for (const b of bs) {
       if (b.held) continue;
       const nvx = (b.x - b.px) / h, nvy = (b.y - b.py) / h;
-      // restitution / friction heuristics based on blocked motion
-      b.vx = nvx; b.vy = nvy;
+      // velocity gained from overlap correction is capped so merges/landings push neighbours gently instead of launching them
+      const sp = Math.hypot(b.vx, b.vy);
+      if (sp > this.maxPush) {
+        // fast body (falling): it may be stopped completely, but can only rebound along its path by maxBounce
+        const ux = b.vx / sp, uy = b.vy / sp;
+        let par = nvx * ux + nvy * uy; let perx = nvx - par * ux, pery = nvy - par * uy; const pm = Math.hypot(perx, pery);
+        if (par < -this.maxBounce) par = -this.maxBounce; if (par > sp) par = sp;
+        if (pm > this.maxPush) { perx *= this.maxPush / pm; pery *= this.maxPush / pm; }
+        b.vx = par * ux + perx; b.vy = par * uy + pery;
+      } else {
+        // slow/resting body: overlap corrections (merge growth, landings) may only nudge it
+        let dvx = nvx - b.vx, dvy = nvy - b.vy; const dm = Math.hypot(dvx, dvy);
+        if (dm > this.maxPush) { dvx *= this.maxPush / dm; dvy *= this.maxPush / dm; }
+        b.vx += dvx; b.vy += dvy;
+      }
     }
     // contact velocity response (bounce + friction + spin)
     for (const [a, b] of contacts) {
@@ -129,7 +146,7 @@ class World {
       if (b.x + b.r >= this.right - 1e-4 && b.vx > 0) { b.vx = -b.vx * this.restitution; b.av -= b.vy / b.r * 0.2; }
       b.av *= 0.985; b.angle += b.av * h;
       // clamp crazy speeds
-      const sp = Math.hypot(b.vx, b.vy); if (sp > 40) { b.vx *= 40 / sp; b.vy *= 40 / sp; }
+      const sp = Math.hypot(b.vx, b.vy); if (sp > this.maxSpeed) { b.vx *= this.maxSpeed / sp; b.vy *= this.maxSpeed / sp; }
     }
   }
 
@@ -335,7 +352,7 @@ const CFG = {
   maxLevel: 10, scoreMul: 2, wmBonus: 100, wmGems: 5, spawnMax: 4,
   jar: { left: -3.6, right: 3.6, top: 0, floor: 9.0, dropY: -0.8, deadY: 0.4, grace: 1.2 },
   keySpeed: 7.5,            // world units per second for keyboard aiming
-  physics: { gravity: 26, restitution: 0.12, friction: 0.28 },
+  physics: { gravity: 24, restitution: 0.08, friction: 0.3, maxPush: 6, maxBounce: 3, maxSpeed: 22 },
   dropCooldown: 0.55, autoFireInterval: 1.4,
   startGems: 300, shakeCost: 30, shakeFree: 1, shakeForce: 8, removeCost: 20, removeMax: 3,
   continueCosts: [100, 200, 300, 500, 800], freeContinues: 1, continueRadius: 1.6, invincible: 3,
@@ -468,7 +485,7 @@ function processMerges() {
       continue;
     }
     const nl = lv + 1; const r = CFG.candies[nl].r;
-    const n = new Body(mx, my, r, nl); n.landed = true; n.vx = vx; n.vy = vy; n.scale = 0.55; G.world.add(n);
+    const n = new Body(mx, my, r, nl); n.landed = true; n.vx = vx; n.vy = vy; n.scale = 0.55; n.r = Math.max(a.r, b.r); n.tr = r; G.world.add(n);  // physics radius grows in so neighbours get nudged, not launched
     const pts = CFG.candies[nl].s * CFG.scoreMul; addScore(pts);
     burst(mx, my, nl, CFG.candies[nl].c, 1 + nl * 0.12); scorePop(mx, my - r * 0.6, '+' + pts, '#fff', 0.9 + nl * 0.07);
     Audio.pop(nl); if (nl >= 6) Audio.haptic(nl >= 9 ? 50 : 20); if (nl >= 8) shakeCam(0.06 + nl * 0.015, 0.25);
