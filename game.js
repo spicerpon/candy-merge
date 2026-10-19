@@ -1,4 +1,4 @@
-/* Candy Merge 2048 — © KOGAMES. Built 2026-10-19T14:33Z. Source: src/ */
+/* Candy Merge 2048 — © KOGAMES. Built 2026-10-19T14:43Z. Source: src/ */
 (function(){'use strict';
 // ===== physics.js =====
 // Lightweight position-based circle physics tuned for Suika-style merge games.
@@ -213,7 +213,7 @@ const T = {
   how_to:         ['조작법', 'HOW TO PLAY', '遊び方'],
   how_to_desc:    ['좌우로 드래그해 위치를 정하고 손을 떼면 캔디가 떨어져요.<br>같은 캔디끼리 닿으면 더 큰 캔디로 합쳐지고, 수박 캔디 2개를 합치면 보너스!<br>캔디가 빨간 선 위에 머물면 게임 오버.<br>PC에서는 ← → 키로 이동, 스페이스바로 떨어뜨릴 수 있어요.',
                    'Drag to aim, release to drop.<br>Two matching candies merge into a bigger one — merge two Watermelon Candies for a bonus!<br>If candies stay above the red line, it\'s game over.<br>On PC you can also use ← → to move and Space to drop.',
-                   'ドラッグで位置を決めて離すと落下。<br>同じキャンディ同士がくっつくと大きくなり、スイカ2個で大ボーナス！<br>赤い線の上に留まるとゲームオーバー。<br>PCでは ← → キーで移動、スペースで落とせます。'],
+                   'ドラッグで位置を決めて離すと落下。<br>同じキャンディ同士がくっつくと大きくなり、<br>スイカ2個で大ボーナス！<br>赤い線の上に留まるとゲームオーバー。<br>PCでは ← → キーで移動、スペースで落とせます。'],
   gem_bonus_end:  ['보석 +{0}', 'Gems +{0}', 'ジェム +{0}'],
   settings:       ['설정', 'SETTINGS', '設定'],
   reset_data:     ['데이터 초기화', 'RESET DATA', 'データ初期化'],
