@@ -1,4 +1,4 @@
-/* Candy Merge 2048 — © KOGAMES. Built 2026-10-19T14:43Z. Source: src/ */
+/* Candy Merge 2048 — © KOGAMES. Built 2026-10-19T14:50Z. Source: src/ */
 (function(){'use strict';
 // ===== physics.js =====
 // Lightweight position-based circle physics tuned for Suika-style merge games.
@@ -352,7 +352,7 @@ const Audio = {
 // Everything degrades gracefully: with an ad blocker or before AdSense approval, reward() resolves 'unavailable'
 // and interstitial() resolves immediately, so the game never hangs on ads.
 const Ads = {
-  client: '', loaded: false, testing: false, busy: false, onPause: null, onResume: null,
+  client: '', loaded: false, apiReady: false, testing: false, busy: false, onPause: null, onResume: null,
   init(client, { sound = true, test = false, frequencyHint = '60s' } = {}) {
     this.client = client; this.testing = test;
     if (document.querySelector('script[data-h5-ads]')) return;
@@ -365,10 +365,11 @@ const Ads = {
     s.src = 'https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=' + encodeURIComponent(client);
     s.onload = () => { this.loaded = true; };
     document.head.appendChild(s);
-    window.adConfig({ preloadAdBreaks: 'on', sound: sound ? 'on' : 'off', onReady: () => { this.loaded = true; } });
+    // onReady only fires once the Ad Placement API is live for this AdSense account/site; until then every placement is skipped instantly.
+    window.adConfig({ preloadAdBreaks: 'on', sound: sound ? 'on' : 'off', onReady: () => { this.loaded = true; this.apiReady = true; } });
   },
   setSound(on) { try { window.adConfig && window.adConfig({ sound: on ? 'on' : 'off' }); } catch (e) {} },
-  available() { return !!(window.adsbygoogle && (window.adsbygoogle.loaded || this.loaded)); },
+  available() { return this.apiReady && !!window.adBreak; },
 
   // Rewarded ad. Resolves 'viewed' | 'dismissed' | 'unavailable'.
   reward(name) {
