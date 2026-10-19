@@ -181,3 +181,5 @@ button{font-family:var(--font-display);cursor:pointer;border:0;background:none;c
 .result-title{margin:calc(8px*var(--s)) 0}
 .title-card{gap:calc(30px*var(--s))}
 .big-score{margin:calc(6px*var(--s)) 0}
+.btn small{font-size:.62em;opacity:.8;font-weight:700;margin-left:calc(6px*var(--s))}
+.btn.tight{font-size:calc(37px*var(--s))}
