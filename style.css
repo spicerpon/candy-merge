@@ -184,3 +184,12 @@ button{font-family:var(--font-display);cursor:pointer;border:0;background:none;c
 .btn small{font-size:.62em;opacity:.8;font-weight:700;margin-left:calc(6px*var(--s))}
 .btn.tight{font-size:calc(37px*var(--s))}
 #toast{top:calc(385px*var(--s))}
+
+/* ---------- world ranking ---------- */
+.rank{max-height:calc(560px*var(--s))}
+.rec .nm{flex:1;text-align:left;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0}
+.rec .pts{flex:none;font-variant-numeric:tabular-nums}
+.namerow{display:flex;gap:calc(12px*var(--s));width:100%;align-items:center}
+.namerow input{flex:1;min-width:0;height:calc(60px*var(--s));border-radius:999px;border:calc(3px*var(--s)) solid rgba(91,59,29,.2);padding:0 calc(22px*var(--s));
+  font-family:var(--font-display);font-weight:700;font-size:calc(28px*var(--s));color:var(--brown);background:#fff;outline:none;user-select:text;-webkit-user-select:text;touch-action:auto}
+.namerow input:focus{border-color:var(--blue)}
