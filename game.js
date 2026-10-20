@@ -1,4 +1,4 @@
-/* Candy Merge 2048 — © KOGAMES. Built 2026-10-20T05:20Z. Source: src/ */
+/* Candy Merge 2048 — © KOGAMES. Built 2026-10-20T08:14Z. Source: src/ */
 (function(){'use strict';
 // ===== physics.js =====
 // Lightweight position-based circle physics tuned for Suika-style merge games.
@@ -51,8 +51,9 @@ class World {
     // integrate
     for (const b of bs) {
       if (b.r < b.tr) b.r = Math.min(b.tr, b.r + (b.tr - b.r) * Math.min(1, 22 * h) + 0.003);
-      if (b.held) { b.px = b.x; b.py = b.y; b.vx = b.vy = 0; continue; }
+      if (b.held) { b.px = b.x; b.py = b.y; b.vx = b.vy = 0; b.pvx = b.pvy = 0; continue; }
       b.vy += this.gravity * h;
+      b.pvx = b.vx; b.pvy = b.vy;   // pre-solve velocity: bounces are computed from the real impact speed, not the post-correction remnant
       const d = 1 - this.drag;
       b.vx *= d; b.vy *= d;
       b.px = b.x; b.py = b.y;
@@ -126,10 +127,11 @@ class World {
       const nx = dx / d, ny = dy / d;
       const rvx = b.vx - a.vx, rvy = b.vy - a.vy; const vn = rvx * nx + rvy * ny;
       const wsum = a.invMass + b.invMass;
-      if (vn < -0.8) {
-        const j = -(1 + this.restitution) * vn / wsum;
-        if (!a.held) { a.vx -= j * a.invMass * nx; a.vy -= j * a.invMass * ny; }
-        if (!b.held) { b.vx += j * b.invMass * nx; b.vy += j * b.invMass * ny; }
+      const pvn = (b.pvx - a.pvx) * nx + (b.pvy - a.pvy) * ny;   // approach speed before the position solve
+      if (pvn < -1.2) {
+        const want = Math.min(this.maxBounce, -this.restitution * pvn);   // separation speed we want after impact
+        if (want > vn) { const j = (want - vn) / wsum; if (!a.held) { a.vx -= j * a.invMass * nx; a.vy -= j * a.invMass * ny; } if (!b.held) { b.vx += j * b.invMass * nx; b.vy += j * b.invMass * ny; } }
+        const hit = Math.min(1, -pvn / 18); if (!a.held) a.squash = Math.max(a.squash || 0, hit * 0.22 * Math.abs(ny)); if (!b.held) b.squash = Math.max(b.squash || 0, hit * 0.22 * Math.abs(ny));
       }
       // tangential friction
       const tx = -ny, ty = nx; const vt = rvx * tx + rvy * ty;
@@ -141,9 +143,10 @@ class World {
     // wall velocity response
     for (const b of bs) {
       if (b.held) continue;
-      if (b.y + b.r >= this.floor - 1e-4) { if (b.vy > 0) b.vy = -b.vy * this.restitution; b.vx *= (1 - this.friction * 0.5); b.av = b.vx / b.r * 0.9; }
-      if (b.x - b.r <= this.left + 1e-4 && b.vx < 0) { b.vx = -b.vx * this.restitution; b.av += b.vy / b.r * 0.2; }
-      if (b.x + b.r >= this.right - 1e-4 && b.vx > 0) { b.vx = -b.vx * this.restitution; b.av -= b.vy / b.r * 0.2; }
+      if (b.y + b.r >= this.floor - 1e-4) { if (b.pvy > 1.2) { b.vy = -Math.min(this.maxBounce, b.pvy * this.restitution); b.squash = Math.max(b.squash || 0, Math.min(1, b.pvy / 18) * 0.25); } else if (b.vy > 0) b.vy = 0; b.vx *= (1 - this.friction * 0.5); b.av = b.vx / b.r * 0.9; }
+      if (b.x - b.r <= this.left + 1e-4 && b.vx < 0) { b.vx = -Math.min(this.maxBounce, (b.pvx < -1.2 ? -b.pvx : -b.vx) * this.restitution); b.av += b.vy / b.r * 0.2; }
+      if (b.x + b.r >= this.right - 1e-4 && b.vx > 0) { b.vx = -Math.min(this.maxBounce, (b.pvx > 1.2 ? b.pvx : b.vx) * this.restitution); b.av -= b.vy / b.r * 0.2; }
+      if (b.squash) { b.squash *= 0.86; if (b.squash < 0.004) b.squash = 0; }
       b.av *= 0.985; b.angle += b.av * h;
       // clamp crazy speeds
       const sp = Math.hypot(b.vx, b.vy); if (sp > this.maxSpeed) { b.vx *= this.maxSpeed / sp; b.vy *= this.maxSpeed / sp; }
@@ -494,7 +497,7 @@ const CFG = {
   maxLevel: 10, scoreMul: 2, wmBonus: 100, wmGems: 10, spawnMax: 4,
   jar: { left: -3.6, right: 3.6, top: 0, floor: 9.0, dropY: -0.8, deadY: 0.4, grace: 1.2 },
   keySpeed: 7.5,            // world units per second for keyboard aiming
-  physics: { gravity: 26, restitution: 0.14, friction: 0.3, maxPush: 11, maxBounce: 7, maxSpeed: 26 },
+  physics: { gravity: 26, restitution: 0.2, friction: 0.09, maxPush: 11, maxBounce: 7, maxSpeed: 26 },
   mergePop: 4.5,            // outward nudge (u/s) given to neighbours when candies merge
   dropCooldown: 0.55, autoFireInterval: 1.4,
   shakeCost: 30, shakeFree: 1, shakeForce: 8, removeCost: 20, removeMax: 3,
@@ -851,7 +854,7 @@ function render() {
       const im = Assets.candy[b.level]; if (!im || !im.width) continue;
       const [px, py] = W2S(b.x, b.y); const d = b.r * 2 * SPR * S * b.scale; // sprite has margin (candy radius 436 of 512 + glow)
       const dim = (G.state === 'remove' && inRemove(b)) || (G.state === 'pick' && G.pointerDown && Math.hypot(b.x - G.removePos[0], b.y - G.removePos[1]) <= b.r + 0.15);
-      ctx.save(); ctx.translate(px, py); ctx.rotate(b.angle); if (dim) ctx.globalAlpha = 0.45;
+      ctx.save(); ctx.translate(px, py); if (b.squash) { ctx.scale(1 + b.squash, 1 - b.squash); ctx.translate(0, b.squash * d * 0.5); } ctx.rotate(b.angle); if (dim) ctx.globalAlpha = 0.45;
       if (b.held) { ctx.shadowColor = 'rgba(0,0,0,0.25)'; ctx.shadowBlur = 0.2 * S; ctx.shadowOffsetY = 0.12 * S; }
       ctx.drawImage(im, -d / 2, -d / 2, d, d); ctx.restore();
     }
