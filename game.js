@@ -1,4 +1,4 @@
-/* Candy Merge 2048 — © KOGAMES. Built 2026-10-19T23:14Z. Source: src/ */
+/* Candy Merge 2048 — © KOGAMES. Built 2026-10-20T05:20Z. Source: src/ */
 (function(){'use strict';
 // ===== physics.js =====
 // Lightweight position-based circle physics tuned for Suika-style merge games.
@@ -200,6 +200,15 @@ const T = {
   recent_records: ['최근 기록', 'Recent games', '最近の記録'],
   weekly_best:    ['이번 주 최고', 'This week\'s best', '今週のベスト'],
   no_records:     ['기록이 없습니다', 'No records yet', '記録がありません'],
+  world_ranking:  ['세계 랭킹', 'WORLD RANKING', '世界ランキング'],
+  my_rank:        ['내 순위 {0} · 최고 {1}', 'Your rank {0} · best {1}', 'あなたの順位 {0} · ベスト {1}'],
+  rank_loading:   ['랭킹 불러오는 중…', 'Loading ranking…', 'ランキング読み込み中…'],
+  rank_offline:   ['랭킹 서버에 연결할 수 없어요', 'Can\'t reach the ranking server', 'ランキングサーバーに接続できません'],
+  rank_none:      ['한 판 끝내면 세계 랭킹에 올라가요', 'Finish a game to enter the world ranking', '1プレイ終えると世界ランキングに登録されます'],
+  rank_empty:     ['아직 기록이 없어요. 첫 번째가 되어 보세요!', 'No scores yet — be the first!', 'まだ記録なし。一番乗りになろう！'],
+  nickname:       ['닉네임', 'Nickname', 'ニックネーム'],
+  save:           ['저장', 'SAVE', '保存'],
+  saved:          ['저장했어요', 'Saved', '保存しました'],
   share:          ['공유', 'SHARE', 'シェア'],
   share_text:     ['캔디 머지 2048에서 {0}점을 기록했어요! 도전해 보세요 → ', 'I scored {0} in Candy Merge 2048! Can you beat it? → ', 'キャンディマージ2048で{0}点！挑戦してみて → '],
   copied:         ['링크를 복사했어요', 'Link copied', 'リンクをコピーしました'],
@@ -254,6 +263,7 @@ const DEFAULT = () => ({
   records: [],            // [{score, date, merges}] most recent first (max 10)
   weekKey: '', weekBest: 0,
   adDay: '', adCount: 0,     // rewarded-ad gem claims today
+  name: '',                  // public nickname for the world ranking
 });
 
 function readRaw() {
@@ -409,6 +419,69 @@ const Ads = {
       } catch (e) { finish(); }
     });
   },
+};
+// ===== rank.js =====
+// Global leaderboard on Firebase Realtime Database (own project candy-merge-f2218, node: scores/{uid}).
+// Loaded lazily — the game is fully playable offline; ranking is a bonus layer.
+// Record shape: { n: nickname, s: best score, m: merges, t: server time, l: lang }
+const Rank = {
+  cfg: {
+    apiKey: 'AIzaSyDDUaN_N3_jKHYmpy7I6Aafg5L9B7OJnPA',
+    authDomain: 'candy-merge-f2218.firebaseapp.com',
+    databaseURL: 'https://candy-merge-f2218-default-rtdb.asia-southeast1.firebasedatabase.app',
+    projectId: 'candy-merge-f2218',
+    appId: '1:425640198668:web:37b0c439b855c0b6df6429',
+  },
+  VER: '12.4.0', F: null, db: null, uid: null, _init: null, lastSent: -1, lastErr: null,
+  path: 'scores', TOP: 50, MAXNAME: 14,
+
+  init() {
+    if (this._init) return this._init;
+    this._init = (async () => {
+      const B = `https://www.gstatic.com/firebasejs/${this.VER}/`;
+      const [app, auth, dbm] = await Promise.all([import(B + 'firebase-app.js'), import(B + 'firebase-auth.js'), import(B + 'firebase-database.js')]);
+      const a = app.getApps().length ? app.getApp() : app.initializeApp(this.cfg);
+      const au = auth.getAuth(a);
+      if (!au.currentUser) await auth.signInAnonymously(au);
+      this.uid = au.currentUser.uid; this.F = dbm; this.db = dbm.getDatabase(a);
+      return true;
+    })().catch((e) => { this.lastErr = e; this._init = null; return false; });
+    return this._init;
+  },
+  online() { return typeof navigator === 'undefined' || navigator.onLine !== false; },
+
+  // Push the player's best (only when it beats what we already sent). Never throws.
+  async submit(best, merges, name, lang) {
+    try {
+      if (!this.online() || !(best > 0) || best <= this.lastSent) return false;
+      if (!(await this.init())) return false;
+      const F = this.F; const n = this.cleanName(name);
+      await F.update(F.ref(this.db, `${this.path}/${this.uid}`), { n, s: best, m: merges | 0, t: F.serverTimestamp(), l: (lang || 'en').slice(0, 2) });
+      this.lastSent = best; return true;
+    } catch (e) { this.lastErr = e; return false; }
+  },
+  // Rename without changing the score (score must be re-sent too because of the validate rule → send same best).
+  async rename(name, best, merges, lang) { this.lastSent = -1; return this.submit(best, merges, name, lang); },
+
+  // Top N + the caller's own rank. Returns { top: [{uid,n,s,m,t}], me: {rank, s} | null }
+  async top(myBest = 0) {
+    if (!(await this.init())) return null;
+    const F = this.F; const base = F.ref(this.db, this.path);
+    const snap = await F.get(F.query(base, F.orderByChild('s'), F.limitToLast(this.TOP)));
+    const top = []; snap.forEach((c) => { const v = c.val() || {}; top.push({ uid: c.key, n: v.n || '?', s: +v.s || 0, m: v.m | 0, t: v.t || 0 }); });
+    top.sort((a, b) => b.s - a.s || a.t - b.t);
+    let me = null;
+    const idx = top.findIndex((r) => r.uid === this.uid);
+    if (idx >= 0) me = { rank: idx + 1, s: top[idx].s, inTop: true };
+    else if (myBest > 0) {
+      // how many players scored higher? (capped so a huge board never downloads everything)
+      const above = await F.get(F.query(base, F.orderByChild('s'), F.startAt(myBest + 1), F.limitToFirst(1000)));
+      let c = 0; above.forEach(() => { c++; }); me = { rank: c + 1, s: myBest, inTop: false, capped: c >= 1000 };
+    }
+    return { top, me };
+  },
+  cleanName(s) { s = String(s || '').replace(/[\u0000-\u001f<>]/g, '').trim(); return (s || 'Candy').slice(0, this.MAXNAME); },
+  defaultName() { return 'Candy' + String(1000 + Math.floor(Math.random() * 9000)); },
 };
 // ===== main.js =====
 // ===================== Candy Merge 2048 — main =====================
@@ -602,6 +675,8 @@ function finishGame() {
   let gems = Math.min(CFG.endCap, CFG.endBase + Math.floor(G.score / CFG.endPerPts));
   if (G.isNewRecord) gems += CFG.newRecordGems;
   G.endGems = gems; Save.addGems(gems); Save.save();
+  if (!Save.d.name) { Save.d.name = Rank.defaultName(); Save.save(); }
+  Rank.submit(Save.d.best, Save.d.merges, Save.d.name, lang());   // world ranking (best only; no-op offline)
   if (G.time >= CFG.ads.interstitialMinPlay) Ads.interstitial('game_over').then(() => UI.showResult()); else UI.showResult();
 }
 
@@ -900,6 +975,7 @@ const UI = {
   },
   btn(label, cls, onClick, extra = '') { const b = document.createElement('button'); b.className = 'btn ' + cls + ' ' + extra; b.innerHTML = label; b.onclick = () => { Audio.click(); onClick && onClick(); }; return b; },
   el(tag, cls, html) { const d = document.createElement(tag); if (cls) d.className = cls; if (html != null) d.innerHTML = html; return d; },
+  esc(s) { return String(s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]); },
   gemHtml(n) { return `<img src="assets/gem.png" alt="" style="width:calc(44px*var(--s));height:calc(44px*var(--s));vertical-align:middle"> ${n}`; },
 
   // ---- menu ----
@@ -1015,10 +1091,33 @@ const UI = {
   showRecords() {
     const card = this.open(t('ranking'), 'var(--yellow)');
     card.appendChild(this.el('p', '', `${t('best')}: <b>${Save.d.best.toLocaleString()}</b> &nbsp;·&nbsp; ${t('weekly_best')}: <b>${Save.d.weekBest.toLocaleString()}</b>`));
+    // ---- world ranking (Firebase, loads lazily) ----
+    card.appendChild(this.el('h3', '', '🌍 ' + t('world_ranking')));
+    const status = this.el('p', 'note', t('rank_loading')); card.appendChild(status);
+    const wl = this.el('div', 'list scroll rank'); card.appendChild(wl);
+    const row = this.el('div', 'namerow');
+    const inp = document.createElement('input'); inp.type = 'text'; inp.maxLength = Rank.MAXNAME; inp.placeholder = t('nickname'); inp.value = Save.d.name || ''; inp.autocomplete = 'off'; inp.spellcheck = false;
+    const sb = this.btn(t('save'), 'c-blue small', async () => {
+      const n = Rank.cleanName(inp.value); if (!n) return; Save.d.name = n; Save.save(); inp.value = n; sb.disabled = true;
+      const ok = await Rank.rename(n, Save.d.best, Save.d.merges, lang()); sb.disabled = false; this.toast(ok ? t('saved') : t('rank_offline')); if (ok) load();
+    });
+    row.appendChild(inp); row.appendChild(sb); card.appendChild(row);
+    const load = async () => {
+      wl.innerHTML = ''; status.textContent = t('rank_loading');
+      const res = await Rank.top(Save.d.best).catch(() => null);
+      if (!card.isConnected) return;
+      if (!res) { status.textContent = t('rank_offline'); return; }
+      if (!res.top.length) wl.appendChild(this.el('p', '', t('rank_empty')));
+      res.top.forEach((r, i) => { const medal = i < 3 ? ['🥇', '🥈', '🥉'][i] : String(i + 1); wl.appendChild(this.el('div', 'rec' + (r.uid === Rank.uid ? ' top' : ''), `<span class="idx">${medal}</span><span class="nm">${this.esc(r.n)}</span><span class="pts">${r.s.toLocaleString()}</span>`)); });
+      status.textContent = res.me ? t('my_rank', '#' + res.me.rank + (res.me.capped ? '+' : ''), res.me.s.toLocaleString()) : t('rank_none');
+    };
+    if (!Save.d.name) { Save.d.name = Rank.defaultName(); Save.save(); inp.value = Save.d.name; }
+    load();
+    // ---- recent games (local) ----
     card.appendChild(this.el('h3', '', t('recent_records')));
-    const list = this.el('div', 'list scroll');
+    const list = this.el('div', 'list');
     if (!Save.d.records.length) list.appendChild(this.el('p', '', t('no_records')));
-    Save.d.records.forEach((r, i) => { list.appendChild(this.el('div', 'rec' + (r.score === Save.d.best ? ' top' : ''), `<span class="idx">${i + 1}</span><span class="sc">${r.score.toLocaleString()}</span><span class="dt">${r.date}</span>`)); });
+    Save.d.records.slice(0, 5).forEach((r, i) => { list.appendChild(this.el('div', 'rec' + (r.score === Save.d.best ? ' top' : ''), `<span class="idx">${i + 1}</span><span class="sc">${r.score.toLocaleString()}</span><span class="dt">${r.date}</span>`)); });
     card.appendChild(list);
   },
 
