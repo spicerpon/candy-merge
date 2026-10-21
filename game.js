@@ -1,4 +1,4 @@
-/* Candy Merge 2048 — © KOGAMES. Built 2026-10-21T01:38Z. Source: src/ */
+/* Candy Merge 2048 — © KOGAMES. Built 2026-10-21T07:23Z. Source: src/ */
 (function(){'use strict';
 // ===== physics.js =====
 // Lightweight position-based circle physics tuned for Suika-style merge games.
@@ -153,12 +153,12 @@ class World {
         // grip: slip between the rim and the floor becomes rotation (a spinning candy grips and rolls, a sliding one spins up)
         const s = b.vx - b.av * b.r; const q = -s / 3 * this.grip; b.vx += q; b.av -= 2 * q / b.r;
         b.vx *= (1 - this.rollRes);   // rolling resistance: a free roll fades out over a couple of seconds instead of stopping dead
-        if (Math.abs(b.vx) < 0.06 && Math.abs(b.av * b.r) < 0.06) { b.vx = 0; b.av = 0; }
+        if (Math.abs(b.vx) < 0.03 && Math.abs(b.av * b.r) < 0.03) { b.vx = 0; b.av = 0; }
       }
       if (b.x - b.r <= this.left + 1e-4 && b.vx < 0) { b.vx = -Math.min(this.maxBounce, (b.pvx < -1.2 ? -b.pvx : -b.vx) * this.restitution); b.av += b.vy / b.r * 0.2; }
       if (b.x + b.r >= this.right - 1e-4 && b.vx > 0) { b.vx = -Math.min(this.maxBounce, (b.pvx > 1.2 ? b.pvx : b.vx) * this.restitution); b.av -= b.vy / b.r * 0.2; }
       if (b.squash) { b.squash *= 0.86; if (b.squash < 0.004) b.squash = 0; }
-      b.av *= 0.985; b.angle += b.av * h;
+      b.av *= 0.999; b.angle += b.av * h;   // light spin damping: free spin should survive the fall so the grip can turn it into a roll on landing
       // clamp crazy speeds
       const sp = Math.hypot(b.vx, b.vy); if (sp > this.maxSpeed) { b.vx *= this.maxSpeed / sp; b.vy *= this.maxSpeed / sp; }
     }
@@ -509,6 +509,8 @@ const CFG = {
   jar: { left: -3.6, right: 3.6, top: 0, floor: 9.0, dropY: -0.8, deadY: 0.4, grace: 1.2 },
   keySpeed: 7.5,            // world units per second for keyboard aiming
   physics: { gravity: 26, restitution: 0.2, friction: 0.03, grip: 0.5, rollRes: 0.006, maxPush: 11, maxBounce: 7, maxSpeed: 26 },
+  dropSpin: 1.6,    // rim speed (u/s) of the small random spin a released candy gets — on landing the grip turns it into a short roll
+  dropCarry: 0.7,   // max horizontal speed a candy keeps from the drag/keyboard motion at the moment of release
   mergePop: 4.5,            // outward nudge (u/s) given to neighbours when candies merge
   dropCooldown: 0.55, autoFireInterval: 1.4,
   shakeCost: 30, shakeFree: 1, shakeForce: 8, removeCost: 20, removeMax: 3,
@@ -609,7 +611,7 @@ function spawnHeld() {
   const lv = G.next; G.next = rollNext(); updateNext();
   const r = CFG.candies[lv].r;
   const b = new Body(clampX(G.aimX, r), CFG.jar.dropY, r, lv);
-  b.held = true; b.scale = 0.3; G.held = b; G.world.add(b);
+  b.held = true; b.scale = 0.3; G.held = b; G.world.add(b); G.heldVX = 0; G.heldPX = null;
   G.autoFireAt = G.time + CFG.autoFireInterval;
 }
 function updateNext() { UI.setNext(G.next); }
@@ -617,6 +619,10 @@ function updateNext() { UI.setNext(G.next); }
 function dropHeld() {
   const b = G.held; if (!b || G.state !== 'playing') return;
   G.held = null; b.held = false; b.vy = 0.5; Audio.drop();
+  // carry a little of the aiming motion and a touch of spin so a landing on the bare floor rolls out instead of stopping dead
+  b.vx = Math.max(-CFG.dropCarry, Math.min(CFG.dropCarry, G.heldVX * 0.25));
+  const dir = Math.abs(b.vx) > 0.05 ? Math.sign(b.vx) : (Math.random() < 0.5 ? -1 : 1);   // spin follows the drag direction, random when released still
+  b.av = dir * CFG.dropSpin / b.r + b.vx / b.r;
   G.dropCooldownUntil = G.time + CFG.dropCooldown; G.dropped = b;
 }
 
@@ -798,7 +804,7 @@ function update(dt) {
   if (G.world && sim) {
     if (G.state === 'playing' && !G.pointerDown && (G.keys.left || G.keys.right)) { const kv = CFG.keySpeed * dt * ((G.keys.right ? 1 : 0) - (G.keys.left ? 1 : 0)); G.aimX = clampX(G.aimX + kv, G.held ? G.held.r : 0.3); }
     else if ((G.state === 'remove' || G.state === 'pick') && !G.pointerDown && (G.keys.left || G.keys.right)) { const kv = CFG.keySpeed * dt * ((G.keys.right ? 1 : 0) - (G.keys.left ? 1 : 0)); G.removePos = clampJar(G.removePos[0] + kv, G.removePos[1]); }
-    if (G.held) { G.held.x = clampX(G.aimX, G.held.r); G.held.y = CFG.jar.dropY; }
+    if (G.held) { const hx = clampX(G.aimX, G.held.r); const hv = (hx - (G.heldPX ?? hx)) / dt; G.heldVX = G.heldVX * 0.7 + hv * 0.3; G.heldPX = hx; G.held.x = hx; G.held.y = CFG.jar.dropY; }
     G.world.step(1 / 60); processMerges();
     for (const b of G.world.bodies) if (b.scale < 1) b.scale = Math.min(1, b.scale + dt * 4.5);
   }
