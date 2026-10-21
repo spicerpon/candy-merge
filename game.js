@@ -1,4 +1,4 @@
-/* Candy Merge 2048 — © KOGAMES. Built 2026-10-20T08:14Z. Source: src/ */
+/* Candy Merge 2048 — © KOGAMES. Built 2026-10-21T01:38Z. Source: src/ */
 (function(){'use strict';
 // ===== physics.js =====
 // Lightweight position-based circle physics tuned for Suika-style merge games.
@@ -27,7 +27,9 @@ class World {
     this.left = opts.left; this.right = opts.right; this.floor = opts.floor; this.ceil = opts.ceil;
     this.gravity = opts.gravity ?? 26;
     this.restitution = opts.restitution ?? 0.12;
-    this.friction = opts.friction ?? 0.28;
+    this.friction = opts.friction ?? 0.28;   // viscous tangential damping at contacts (settles piles)
+    this.grip = opts.grip ?? 0.5;             // how fast surface slip is converted into rolling (0..1 per substep)
+    this.rollRes = opts.rollRes ?? 0.006;     // rolling resistance on the floor per substep
     this.drag = opts.drag ?? 0.004;
     this.maxPush = opts.maxPush ?? 7;   // max speed a resting body can gain from overlap correction per substep (u/s)
     this.maxSpeed = opts.maxSpeed ?? 22;
@@ -133,17 +135,26 @@ class World {
         if (want > vn) { const j = (want - vn) / wsum; if (!a.held) { a.vx -= j * a.invMass * nx; a.vy -= j * a.invMass * ny; } if (!b.held) { b.vx += j * b.invMass * nx; b.vy += j * b.invMass * ny; } }
         const hit = Math.min(1, -pvn / 18); if (!a.held) a.squash = Math.max(a.squash || 0, hit * 0.22 * Math.abs(ny)); if (!b.held) b.squash = Math.max(b.squash || 0, hit * 0.22 * Math.abs(ny));
       }
-      // tangential friction
+      // rolling contact: the impulse that removes *surface slip* (relative velocity of the two rims at the contact point)
+      // also spins both discs (I = m r^2 / 2), so a candy rolling over another loses nothing and keeps rolling smoothly
       const tx = -ny, ty = nx; const vt = rvx * tx + rvy * ty;
-      const jt = -vt * this.friction / wsum;
-      if (!a.held) { a.vx -= jt * a.invMass * tx; a.vy -= jt * a.invMass * ty; a.av += (vt / a.r) * 0.08; }
-      if (!b.held) { b.vx += jt * b.invMass * tx; b.vy += jt * b.invMass * ty; b.av -= (vt / b.r) * 0.08; }
+      const slip = vt - b.av * b.r - a.av * a.r;
+      const jt = -slip / (3 * wsum) * this.grip - vt * this.friction / wsum;
+      if (!a.held) { a.vx -= jt * a.invMass * tx; a.vy -= jt * a.invMass * ty; a.av -= 2 * jt * a.invMass / a.r; }
+      if (!b.held) { b.vx += jt * b.invMass * tx; b.vy += jt * b.invMass * ty; b.av -= 2 * jt * b.invMass / b.r; }
       if (a.level === b.level && !a.held && !b.held && this.onContact) this.onContact(a, b);
     }
     // wall velocity response
     for (const b of bs) {
       if (b.held) continue;
-      if (b.y + b.r >= this.floor - 1e-4) { if (b.pvy > 1.2) { b.vy = -Math.min(this.maxBounce, b.pvy * this.restitution); b.squash = Math.max(b.squash || 0, Math.min(1, b.pvy / 18) * 0.25); } else if (b.vy > 0) b.vy = 0; b.vx *= (1 - this.friction * 0.5); b.av = b.vx / b.r * 0.9; }
+      if (b.y + b.r >= this.floor - 1e-4) {
+        if (b.pvy > 1.2) { b.vy = -Math.min(this.maxBounce, b.pvy * this.restitution); b.squash = Math.max(b.squash || 0, Math.min(1, b.pvy / 18) * 0.25); b.vx *= 0.9; }
+        else if (b.vy > 0) b.vy = 0;
+        // grip: slip between the rim and the floor becomes rotation (a spinning candy grips and rolls, a sliding one spins up)
+        const s = b.vx - b.av * b.r; const q = -s / 3 * this.grip; b.vx += q; b.av -= 2 * q / b.r;
+        b.vx *= (1 - this.rollRes);   // rolling resistance: a free roll fades out over a couple of seconds instead of stopping dead
+        if (Math.abs(b.vx) < 0.06 && Math.abs(b.av * b.r) < 0.06) { b.vx = 0; b.av = 0; }
+      }
       if (b.x - b.r <= this.left + 1e-4 && b.vx < 0) { b.vx = -Math.min(this.maxBounce, (b.pvx < -1.2 ? -b.pvx : -b.vx) * this.restitution); b.av += b.vy / b.r * 0.2; }
       if (b.x + b.r >= this.right - 1e-4 && b.vx > 0) { b.vx = -Math.min(this.maxBounce, (b.pvx > 1.2 ? b.pvx : b.vx) * this.restitution); b.av -= b.vy / b.r * 0.2; }
       if (b.squash) { b.squash *= 0.86; if (b.squash < 0.004) b.squash = 0; }
@@ -497,7 +508,7 @@ const CFG = {
   maxLevel: 10, scoreMul: 2, wmBonus: 100, wmGems: 10, spawnMax: 4,
   jar: { left: -3.6, right: 3.6, top: 0, floor: 9.0, dropY: -0.8, deadY: 0.4, grace: 1.2 },
   keySpeed: 7.5,            // world units per second for keyboard aiming
-  physics: { gravity: 26, restitution: 0.2, friction: 0.09, maxPush: 11, maxBounce: 7, maxSpeed: 26 },
+  physics: { gravity: 26, restitution: 0.2, friction: 0.03, grip: 0.5, rollRes: 0.006, maxPush: 11, maxBounce: 7, maxSpeed: 26 },
   mergePop: 4.5,            // outward nudge (u/s) given to neighbours when candies merge
   dropCooldown: 0.55, autoFireInterval: 1.4,
   shakeCost: 30, shakeFree: 1, shakeForce: 8, removeCost: 20, removeMax: 3,
