@@ -1,4 +1,4 @@
-/* Candy Merge 2048 — © KOGAMES. Built 2026-10-21T07:23Z. Source: src/ */
+/* Candy Merge 2048 — © KOGAMES. Built 2026-10-22T11:27Z. Source: src/ */
 (function(){'use strict';
 // ===== physics.js =====
 // Lightweight position-based circle physics tuned for Suika-style merge games.
@@ -508,12 +508,12 @@ const CFG = {
   maxLevel: 10, scoreMul: 2, wmBonus: 100, wmGems: 10, spawnMax: 4,
   jar: { left: -3.6, right: 3.6, top: 0, floor: 9.0, dropY: -0.8, deadY: 0.4, grace: 1.2 },
   keySpeed: 7.5,            // world units per second for keyboard aiming
-  physics: { gravity: 26, restitution: 0.2, friction: 0.03, grip: 0.5, rollRes: 0.006, maxPush: 11, maxBounce: 7, maxSpeed: 26 },
+  physics: { gravity: 18.7, restitution: 0.2, friction: 0.03, grip: 0.5, rollRes: 0.006, maxPush: 11, maxBounce: 5.6, maxSpeed: 21 },   // gravity 18.7 (was 26): candies fall at ~80% of the old speed (air drag included)
   dropSpin: 1.6,    // rim speed (u/s) of the small random spin a released candy gets — on landing the grip turns it into a short roll
   dropCarry: 0.7,   // max horizontal speed a candy keeps from the drag/keyboard motion at the moment of release
-  mergePop: 4.5,            // outward nudge (u/s) given to neighbours when candies merge
+  mergePop: 3.6,            // outward nudge (u/s) given to neighbours when candies merge
   dropCooldown: 0.55, autoFireInterval: 1.4,
-  shakeCost: 30, shakeFree: 1, shakeForce: 8, removeCost: 20, removeMax: 3,
+  shakeCost: 30, shakeFree: 1, shakeForce: 6.4, removeCost: 20, removeMax: 3,
   continueCosts: [100, 200, 300, 500, 800], freeContinues: 1, continueRadius: 1.6, invincible: 3,
   timeRewardMin: 30, timeRewardGems: 10, dailyGems: 10, newRecordGems: 5, discoverGems: 3,
   endBase: 2, endPerPts: 1500, endCap: 10,
