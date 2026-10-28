@@ -1,0 +1,91 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Candy Merge 2048 Update Notes — Physics Changes, Ranking, Ads</title>
+<meta name="description" content="The full changelog for Candy Merge 2048, the free suika-style merge puzzle by KOGAMES: physics tuning, world ranking, keyboard controls and more, newest first.">
+<link rel="canonical" href="https://kogames.dev/candy-merge/updates/">
+
+<meta property="og:type" content="article">
+<meta property="og:site_name" content="KOGAMES">
+<meta property="og:title" content="Candy Merge 2048 Update Notes — Physics Changes, Ranking, Ads">
+<meta property="og:description" content="The full changelog for Candy Merge 2048, the free suika-style merge puzzle by KOGAMES: physics tuning, world ranking, keyboard controls and more, newest first.">
+<meta property="og:url" content="https://kogames.dev/candy-merge/updates/">
+<meta property="og:image" content="https://kogames.dev/candy-merge/assets/og.jpg">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="icon" href="/assets/favicon.png" type="image/png">
+<link rel="stylesheet" href="/assets/style.css">
+<style>
+.doc .lead{font-size:18px;color:var(--muted);margin:0 0 20px}
+.doc .tip{border-left:3px solid var(--accent);background:var(--card);padding:12px 16px;border-radius:0 12px 12px 0;margin:16px 0}
+.doc .tip p{margin:0}
+.doc .cta{display:flex;flex-wrap:wrap;gap:10px;margin:32px 0 0}
+.doc .log h2{border-top:0;padding-top:0;margin:34px 0 4px;font-size:19px}
+.doc .log .date{color:var(--accent);font-size:13px;font-weight:700;letter-spacing:.08em;margin:0}
+.doc .log ul{margin:6px 0 0}
+.doc .meta a{color:var(--accent)}
+</style>
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"Article","headline":"Candy Merge 2048 update notes","description":"The full changelog for Candy Merge 2048, the free suika-style merge puzzle by KOGAMES: physics tuning, world ranking, keyboard controls and more, newest first.","inLanguage":"en","datePublished":"2026-10-19","dateModified":"2026-10-28","author":{"@type":"Organization","name":"KOGAMES","url":"https://kogames.dev/"},"publisher":{"@type":"Organization","name":"KOGAMES","url":"https://kogames.dev/"},"image":"https://kogames.dev/candy-merge/assets/og.jpg","mainEntityOfPage":"https://kogames.dev/candy-merge/updates/","about":{"@type":"VideoGame","name":"Candy Merge 2048","url":"https://kogames.dev/candy-merge/"}}</script>
+</head>
+<body>
+<header class="nav"><div class="wrap">
+  <a class="brand" href="/"><img class="brand-logo" src="/assets/logo.png" alt="KOGAMES" width="123" height="32"></a>
+  <ul><li class="hide-sm"><a href="/#games">Games</a></li><li><a href="/candy-merge/">Play Candy Merge</a></li><li class="hide-sm"><a href="/candy-merge/guide/">Guide</a></li></ul>
+</div></header>
+<main class="wrap doc">
+<article>
+
+<h1>Candy Merge 2048 update notes</h1>
+<p class="meta">Everything that changed in the game, newest first · <a href="/candy-merge/">Play Candy Merge 2048</a> · <a href="/candy-merge/guide/">Strategy guide</a></p>
+<p class="lead">Most of the work on Candy Merge after launch went into how the candies <em>feel</em> — how they fall, land, roll and bump — because in a merge game the physics is the game. This log keeps track of each change and the reasoning behind it.</p>
+<div class="log">
+
+<h2>Slower falls</h2>
+<p class="date">OCTOBER 22, 2026</p>
+<ul>
+<li>Gravity turned down so candies fall at about 80% of the previous speed (impact forces scaled to match). The old pace made the pile look jittery on tall stacks and gave you less time to read where a candy would land.</li>
+</ul>
+
+<h2>Rolling that behaves like rolling</h2>
+<p class="date">OCTOBER 21, 2026</p>
+<ul>
+<li>Candies now have real rolling contacts: a candy that lands on a slope spins and rolls instead of sliding, and rolling on the floor slows down naturally.</li>
+<li>A released candy keeps a little of the motion of your drag and a small random spin, so landings on the floor roll out instead of stopping dead.</li>
+</ul>
+
+<h2>World ranking and natural landings</h2>
+<p class="date">OCTOBER 20, 2026</p>
+<ul>
+<li>World ranking added: enter a nickname and your best score joins a top-50 list, with your own rank shown underneath. The ranking stores only the nickname and the score.</li>
+<li>Landings reworked: a real impact bounce, lighter friction and a quick squash on contact. The merge "pop" that nudges neighbours stays; the hop and scale overshoot added the day before were removed because they made tall piles unstable.</li>
+</ul>
+
+<h2>Keyboard controls, ads and a tighter gem economy</h2>
+<p class="date">OCTOBER 19, 2026</p>
+<ul>
+<li>Keyboard play on desktop: arrow keys or A/D to aim, Space, Enter or Down to drop.</li>
+<li>Optional rewarded ads: continue after a game over, or collect 20 gems up to five times a day. A short full-screen ad may appear after a game that lasted at least 20 seconds. The game is fully playable with ads blocked.</li>
+<li>Gem economy tightened — fewer gems from the end-of-game bonus so Shake, Remove and Continue are decisions rather than reflexes.</li>
+<li>Softer physics overall: capped rebound speeds, merged candies grow into their new size instead of popping to it, so neighbours are nudged rather than launched.</li>
+<li>Layout fixes for Korean and Japanese text (webfonts, word breaking, title wrapping) and a pass of UI alignment polish.</li>
+</ul>
+
+<h2>Candy Merge 2048 1.0</h2>
+<p class="date">OCTOBER 19, 2026 · FIRST RELEASE</p>
+<ul>
+<li>Eleven fruit candies from Blueberry to Watermelon, drawn as glossy sprites.</li>
+<li>Jar physics, NEXT preview, auto-drop mode, Shake and Remove items, Continue with a clearing circle.</li>
+<li>Gems from play, discovery, daily bonus and a 30-minute treasure chest; a candy collection screen; recent-games and weekly-best records kept in your browser.</li>
+<li>Korean, English and Japanese, detected automatically and switchable in the menu.</li>
+</ul>
+
+</div>
+<div class="cta"><a class="btn primary" href="/candy-merge/">Play Candy Merge 2048</a><a class="btn" href="/candy-merge/guide/">Read the guide</a></div>
+
+</article>
+</main>
+<footer><div class="wrap"><div class="foot-left"><img class="foot-logo" src="/assets/logo.png" alt="KOGAMES" width="92" height="24" loading="lazy"><div>© 2026 KOGAMES. All rights reserved.</div></div><nav><a href="/candy-merge/">Candy Merge 2048</a><a href="/candy-merge/guide/">Guide</a><a href="/privacy/">Privacy</a><a href="/terms/">Terms</a></nav></div></footer>
+<script>document.addEventListener("click",function(e){document.querySelectorAll("details.lang-menu[open]").forEach(function(d){if(!d.contains(e.target))d.removeAttribute("open")})});</script>
+</body>
+</html>
