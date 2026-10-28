@@ -1,0 +1,139 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Candy Merge 2048 공략 — 합성 순서, 점수 계산, 수박 만드는 법</title>
+<meta name="description" content="Candy Merge 2048 공식 공략: 11가지 캔디와 점수, 내려오는 캔디 확률, 데드라인 판정, 병 관리 습관, 흔들기·제거·이어하기 사용 시점.">
+<link rel="canonical" href="https://kogames.dev/candy-merge/guide/ko/">
+<link rel="alternate" hreflang="en" href="https://kogames.dev/candy-merge/guide/">
+<link rel="alternate" hreflang="ko" href="https://kogames.dev/candy-merge/guide/ko/">
+<link rel="alternate" hreflang="x-default" href="https://kogames.dev/candy-merge/guide/">
+<meta property="og:type" content="article">
+<meta property="og:site_name" content="KOGAMES">
+<meta property="og:title" content="Candy Merge 2048 공략 — 합성 순서, 점수 계산, 수박 만드는 법">
+<meta property="og:description" content="Candy Merge 2048 공식 공략: 11가지 캔디와 점수, 내려오는 캔디 확률, 데드라인 판정, 병 관리 습관, 흔들기·제거·이어하기 사용 시점.">
+<meta property="og:url" content="https://kogames.dev/candy-merge/guide/ko/">
+<meta property="og:image" content="https://kogames.dev/candy-merge/assets/og.jpg">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="icon" href="/assets/favicon.png" type="image/png">
+<link rel="stylesheet" href="/assets/style.css">
+<style>
+.doc .lead{font-size:18px;color:var(--muted);margin:0 0 20px}
+.doc figure{margin:18px 0;border:1px solid var(--line);border-radius:var(--radius);overflow:hidden;background:var(--card)}
+.doc figure img{width:100%;height:auto}
+.doc figcaption{padding:10px 14px;font-size:13px;color:var(--muted)}
+.doc .tip{border-left:3px solid var(--accent);background:var(--card);padding:12px 16px;border-radius:0 12px 12px 0;margin:16px 0}
+.doc .tip p{margin:0}
+.doc .cta{display:flex;flex-wrap:wrap;gap:10px;margin:32px 0 0}
+.doc .kbd{font-family:ui-monospace,Menlo,Consolas,monospace;background:var(--bg-2);border:1px solid var(--line);border-radius:6px;padding:1px 7px;font-size:13px}
+.doc .chain{display:grid;grid-template-columns:repeat(auto-fill,minmax(92px,1fr));gap:8px;margin:14px 0 6px}
+.doc .chain div{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:10px 6px;text-align:center;font-size:12.5px;line-height:1.4}
+.doc .chain img{width:46px;height:46px;margin:0 auto 6px}
+.doc .chain b{display:block;color:var(--text)}
+.doc .chain small{color:var(--muted)}
+.doc .pieces{display:flex;flex-wrap:wrap;gap:10px;margin:14px 0 6px}
+.doc .pieces figure{margin:0;padding:8px;display:flex;flex-direction:column;align-items:center;gap:4px;min-width:72px}
+.doc .pieces figcaption{padding:0;font-size:12px}
+.doc .log h2{border-top:0;padding-top:0;margin:34px 0 4px;font-size:19px}
+.doc .log .date{color:var(--accent);font-size:13px;font-weight:700;letter-spacing:.08em;margin:0}
+.doc .log ul{margin:6px 0 0}
+.doc .meta a{color:var(--accent)}
+.doc table td:first-child{white-space:nowrap}
+</style>
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"Article","headline":"Candy Merge 2048 공략: 합성 순서, 점수 계산, 수박까지 가는 법","description":"Candy Merge 2048 공식 공략: 11가지 캔디와 점수, 내려오는 캔디 확률, 데드라인 판정, 병 관리 습관, 흔들기·제거·이어하기 사용 시점.","inLanguage":"ko","datePublished":"2026-10-28","dateModified":"2026-10-28","author":{"@type":"Organization","name":"KOGAMES","url":"https://kogames.dev/"},"publisher":{"@type":"Organization","name":"KOGAMES","url":"https://kogames.dev/"},"image":"https://kogames.dev/candy-merge/assets/og.jpg","mainEntityOfPage":"https://kogames.dev/candy-merge/guide/ko/","about":{"@type":"VideoGame","name":"Candy Merge 2048","url":"https://kogames.dev/candy-merge/"}}</script>
+</head>
+<body>
+<header class="nav"><div class="wrap">
+  <a class="brand" href="/ko/"><img class="brand-logo" src="/assets/logo.png" alt="KOGAMES" width="123" height="32"></a>
+  <ul><li class="hide-sm"><a href="/ko/#games">게임</a></li><li><a href="/candy-merge/">Candy Merge 플레이</a></li><li class="hide-sm"><a href="/candy-merge/updates/">업데이트</a></li><li class="lang-nav"><details class="lang-menu"><summary aria-label="Language"><svg class="globe" viewBox="0 0 24 24" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="1.8" d="M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18Zm-9 9h18M12 3c2.5 2.6 3.8 5.6 3.8 9s-1.3 6.4-3.8 9c-2.5-2.6-3.8-5.6-3.8-9S9.5 5.6 12 3Z"/></svg><span>한국어</span></summary><div class="lang-list"><a href="/candy-merge/guide/" lang="en" hreflang="en">English</a><a href="/candy-merge/guide/ko/" lang="ko" hreflang="ko" aria-current="true">한국어</a></div></details></li></ul>
+</div></header>
+<main class="wrap doc">
+<article>
+
+<p class="lang-switch"><a href="/candy-merge/guide/">English</a><a href="/candy-merge/guide/ko/" aria-current="true">한국어</a></p>
+<h1>Candy Merge 2048 공략: 합성 순서, 점수 계산, 수박까지 가는 법</h1>
+<p class="meta">2026년 10월 28일 업데이트 · KOGAMES · <a href="/candy-merge/">Candy Merge 2048 플레이</a> · <a href="/candy-merge/updates/">업데이트 노트</a></p>
+<p class="lead">수박게임류를 한 번이라도 해봤다면 기본 흐름은 이미 알고 있을 거예요. 캔디를 떨어뜨리고, 같은 캔디 둘이 닿으면 한 단계 큰 캔디가 되고, 병은 천천히 차오릅니다. 수박을 만드느냐, 코코넛에서 멈추느냐를 가르는 건 결국 병 관리입니다. 이 글에는 정확한 합성 순서, 합성마다 몇 점인지, 게임 오버 판정이 어떻게 나는지, 그리고 3,000점짜리 판과 10,000점짜리 판을 가르는 몇 가지 습관을 정리했습니다. 수치는 전부 게임의 밸런스 파일에서 가져왔습니다.</p>
+
+<nav class="toc" aria-label="목차"><ol>
+<li><a href="#chain">11가지 캔디</a></li><li><a href="#score">점수는 이렇게 납니다</a></li>
+<li><a href="#drops">위에서 내려오는 캔디</a></li><li><a href="#jar">병과 데드라인</a></li>
+<li><a href="#habits">이기는 습관 다섯 가지</a></li><li><a href="#items">흔들기·제거·이어하기</a></li>
+<li><a href="#gems">보석은 어디서 나오나</a></li><li><a href="#controls">조작과 자동발사</a></li>
+<li><a href="#faq">짧은 질문들</a></li>
+</ol></nav>
+
+<h2 id="chain">11가지 캔디</h2>
+<p>캔디는 같은 캔디하고만 합쳐지고, 합쳐지면 다음 순서의 캔디가 됩니다. 가장 작은 것부터 수박까지:</p>
+<div class="chain"><div><img src="/candy-merge/assets/candy/01.webp" alt="블루베리 캔디" loading="lazy" width="46" height="46"><b>1. 블루베리</b><small>떨어지기만 함</small></div><div><img src="/candy-merge/assets/candy/02.webp" alt="체리 캔디" loading="lazy" width="46" height="46"><b>2. 체리</b><small>+6점</small></div><div><img src="/candy-merge/assets/candy/03.webp" alt="포도 캔디" loading="lazy" width="46" height="46"><b>3. 포도</b><small>+12점</small></div><div><img src="/candy-merge/assets/candy/04.webp" alt="레몬 캔디" loading="lazy" width="46" height="46"><b>4. 레몬</b><small>+20점</small></div><div><img src="/candy-merge/assets/candy/05.webp" alt="오렌지 캔디" loading="lazy" width="46" height="46"><b>5. 오렌지</b><small>+30점</small></div><div><img src="/candy-merge/assets/candy/06.webp" alt="청사과 캔디" loading="lazy" width="46" height="46"><b>6. 청사과</b><small>+42점</small></div><div><img src="/candy-merge/assets/candy/07.webp" alt="복숭아 캔디" loading="lazy" width="46" height="46"><b>7. 복숭아</b><small>+56점</small></div><div><img src="/candy-merge/assets/candy/08.webp" alt="코코넛 캔디" loading="lazy" width="46" height="46"><b>8. 코코넛</b><small>+72점</small></div><div><img src="/candy-merge/assets/candy/09.webp" alt="파인애플 캔디" loading="lazy" width="46" height="46"><b>9. 파인애플</b><small>+90점</small></div><div><img src="/candy-merge/assets/candy/10.webp" alt="멜론 캔디" loading="lazy" width="46" height="46"><b>10. 멜론</b><small>+110점</small></div><div><img src="/candy-merge/assets/candy/11.webp" alt="수박 캔디" loading="lazy" width="46" height="46"><b>11. 수박</b><small>+132점</small></div></div>
+<p>수박 둘이 닿는 건 더 큰 캔디가 생기지 않는 유일한 합성입니다. 둘 다 사라지고, 큰 보너스 점수와 보석 10개를 받고, 병에 갑자기 넓은 자리가 생겨요. 한 판에 두 번째 수박을 만드는 것이 Candy Merge의 진짜 "클리어"입니다.</p>
+
+<h2 id="score">점수는 이렇게 납니다</h2>
+<p>점수는 합성될 때만 들어오고, 떨어뜨리는 것만으로는 0점입니다. 합성 한 번은 <strong>새로 생기는 캔디의 합성값 × 2</strong>: 체리 6점, 레몬 20점, 코코넛 72점, 수박 132점. 수박 둘이 서로 사라지면 <strong>332점</strong>입니다.</p>
+<p>큰 캔디는 수많은 작은 합성으로 만들어지기 때문에 점수는 가는 길에 쌓입니다. 블루베리만으로 수박 하나를 만든다면 그 과정의 합성만으로 14,000점이 넘어요. 실제 게임에서는 오렌지까지는 위에서 내려오니 작은 합성 대부분은 건너뛰지만, 청사과부터 위로 올라가는 여섯 번의 합성은 피할 수 없고 그것만으로 3,528점입니다. 1,000점 아래에서 끝났다면 큰 캔디가 생기기도 전에 병이 찼다는 뜻이고, 병을 오래 살려서 큰 캔디 두세 개를 동시에 들고 있게 되면 점수는 금방 올라갑니다.</p>
+
+<h2 id="drops">위에서 내려오는 캔디</h2>
+<p>게임이 손에 쥐여주는 건 작은 다섯 가지뿐입니다. 확률은 작은 쪽으로 쏠려 있어요.</p>
+<table>
+<tr><th>다음 캔디</th><th>확률</th></tr>
+<tr><td>블루베리</td><td>약 24%</td></tr>
+<tr><td>체리</td><td>약 24%</td></tr>
+<tr><td>포도</td><td>약 22%</td></tr>
+<tr><td>레몬</td><td>약 17%</td></tr>
+<tr><td>오렌지</td><td>약 12%</td></tr>
+</table>
+<p><strong>다음(NEXT)</strong> 미리보기에는 지금 손에 든 것 다음에 올 캔디가 보입니다. 꼭 활용하세요. 오렌지가 다음이면, 오렌지가 도착한 뒤가 아니라 지금부터 기존 오렌지 옆자리를 비워두는 겁니다.</p>
+
+<h2 id="jar">병과 데드라인</h2>
+<p>병은 가로 7.2, 깊이 9 단위이고 수박의 지름은 3.4라서, 수박 두 개면 이미 폭의 대부분을 차지합니다. 위쪽에 선이 하나 있는데, 캔디가 그 선 위에 <strong>가만히 멈춘 채로 1.2초</strong>가 지나면 게임이 끝납니다. 아직 떨어지는 중이거나 튀거나 미끄러지는 캔디는 세지 않고, 이어하기 직후 3초 동안도 세지 않아요.</p>
+<p>즉, 지는 건 더미가 높을 때가 아니라 <em>높고 멈췄을 때</em>입니다. 아직 움직이는 중에 선 위로 삐죽 나온 캔디는 반응할 틈을 줍니다. 아래쪽에서 합성이 하나 일어나거나 흔들기 한 번이면 타이머가 끝나기 전에 선 아래로 내려올 수 있어요.</p>
+
+<h2 id="habits">이기는 습관 다섯 가지</h2>
+<ol>
+<li><strong>큰 캔디는 한쪽, 작은 캔디는 반대쪽.</strong> 정석 배치는 경사면입니다. 수박과 멜론을 왼쪽 벽에 붙이고, 오른쪽으로 갈수록 작아지게. 작은 캔디는 작은 쪽에 떨어져서 위로 합쳐지고, 경사를 따라 큰 쪽으로 굴러 들어갑니다.</li>
+<li><strong>작은 캔디를 절대 묻지 마세요.</strong> 파인애플 밑에 깔린 블루베리는 위에서 합성이 일어나기 전엔 꺼낼 수 없는 짐입니다. 작은 캔디가 덮이려 하면 한 번 떨어뜨려서라도 먼저 치우세요.</li>
+<li><strong>옆이 아니라 위에 떨어뜨리세요.</strong> 이 게임의 물리는 부드러워서, 같은 캔디 바로 위에 떨어뜨리면 굴러가기 전에 합쳐집니다. 옆에 떨어뜨리면 틈으로 미끄러져 들어가는 경우가 많아요.</li>
+<li><strong>벽을 쓰세요.</strong> 가장자리에 떨어뜨린 캔디는 경사를 따라 안쪽으로 굴러갑니다. 더미를 흐트러뜨리지 않고 중간 크기 캔디를 짝에게 밀어 넣는 데 쓰세요.</li>
+<li><strong>고를 수 있다면 큰 것부터 합치세요.</strong> 코코넛 둘을 합치면 포도 둘보다 훨씬 넓은 자리가 생기고, 자리가 곧 수명입니다.</li>
+</ol>
+<div class="tip"><p><strong>한 수 앞 보기.</strong> 떨어뜨리기 전에 두 가지만 물어보세요. "이걸로 지금 뭐가 합쳐지지?" 그리고 "이게 나중에 뭘 막지?" 지는 판의 대부분은 예쁘게 합쳐졌지만 그 밑의 작은 캔디를 봉인해 버린 한 수에서 시작됩니다.</p></div>
+
+<h2 id="items">흔들기·제거·이어하기</h2>
+<ul>
+<li><strong>흔들기</strong>(보석 30, 매 판 첫 번째는 무료)는 병 전체를 흔듭니다. 데드라인 위에 걸린 캔디 옆에 미끄러져 들어갈 틈이 있을 때, 또는 짝 둘이 아슬아슬하게 떨어져 있을 때 쓰세요. 꽉 눌린 더미에는 아무 소용이 없습니다.</li>
+<li><strong>제거</strong>(보석 20, 한 판에 최대 3번)는 탭한 캔디 하나를 지웁니다. 가장 좋은 목표는 "큰 쪽" 깊숙이 묻힌 작은 캔디예요. 지우고 나면 무거운 캔디들이 내려앉으면서 공짜 합성이 일어나는 경우가 많습니다.</li>
+<li><strong>이어하기</strong>는 게임이 끝났을 때: 첫 번째는 무료, 그다음은 보석 100, 200, 300, 500, 800. 지점을 고르면 그 주변 원 안의 캔디가 모두 사라지고 3초간 안전합니다. 가장 높은 기둥 꼭대기를 고르는 게 당연해 보이지만, 큰 캔디 위에 올라앉은 작은 캔디 뭉치를 고르는 쪽이 더 나을 때가 많아요. 큰 캔디가 드러나서 바로 합성으로 이어지니까요.</li>
+</ul>
+
+<h2 id="gems">보석은 어디서 나오나</h2>
+<table>
+<tr><th>출처</th><th>보석</th></tr>
+<tr><td>매 판 종료</td><td>2 + 1,500점당 1 (최대 10)</td></tr>
+<tr><td>최고 기록 경신</td><td>+5</td></tr>
+<tr><td>새 캔디 첫 발견</td><td>개당 +3</td></tr>
+<tr><td>수박 만들기</td><td>+10</td></tr>
+<tr><td>보상 상자</td><td>30분마다 +10</td></tr>
+<tr><td>일일 보너스</td><td>+10</td></tr>
+<tr><td>보상형 광고 시청</td><td>+20, 하루 5번까지</td></tr>
+</table>
+<p>보석은 점수와 함께 브라우저에 저장되므로 플레이하는 기기에 남습니다. 게임 안에서 현금으로 파는 건 아무것도 없습니다.</p>
+
+<h2 id="controls">조작과 자동발사</h2>
+<p>폰에서는 드래그로 조준하고 손가락을 떼면 떨어집니다. 키보드는 <span class="kbd">←</span> <span class="kbd">→</span> 또는 <span class="kbd">A</span> <span class="kbd">D</span>로 움직이고 <span class="kbd">Space</span>, <span class="kbd">Enter</span>, <span class="kbd">↓</span>로 떨어뜨립니다. <strong>자동발사(AUTO)</strong>는 조준한 곳에 1.4초마다 떨어뜨려요. 초반 작은 합성을 빠르게 돌릴 때는 편하지만, 더미가 높아지면 꺼두세요. 그때부터는 한 수 한 수가 결정이니까요.</p>
+
+<h2 id="faq">짧은 질문들</h2>
+<ul>
+<li><strong>같은 캔디 둘이 왜 안 합쳐지나요?</strong> 둘 중 하나라도 움직일 수 있는 상태에서 닿아야 합니다. 둘 다 끼어 있으면 근처에 하나 떨어뜨리거나 흔들기로 더미를 건드리세요.</li>
+<li><strong>수박이 위에서 내려오기도 하나요?</strong> 아니요. 처음 다섯 가지만 내려오고, 그보다 큰 건 전부 만들어야 합니다.</li>
+<li><strong>제 점수가 공개되나요?</strong> 세계 랭킹에 닉네임을 입력했을 때만요. 랭킹에는 최고 점수와 닉네임 외에는 아무것도 저장되지 않습니다.</li>
+<li><strong>몇 점이면 잘한 건가요?</strong> 첫 수박은 보통 5,000점 전후에서 나옵니다. 병을 살려서 두 번째 수박까지 만들고 둘을 없애면 한 판이 10,000점을 넘깁니다.</li>
+</ul>
+<div class="cta"><a class="btn primary" href="/candy-merge/">Candy Merge 2048 플레이</a><a class="btn" href="/candy-merge/updates/">업데이트 노트</a><a class="btn" href="/ko/">KOGAMES 게임 전체</a></div>
+
+</article>
+</main>
+<footer><div class="wrap"><div class="foot-left"><img class="foot-logo" src="/assets/logo.png" alt="KOGAMES" width="92" height="24" loading="lazy"><div>© 2026 KOGAMES. All rights reserved.</div></div><nav><a href="/candy-merge/">Candy Merge 2048</a><a href="/candy-merge/updates/">업데이트</a><a href="/ko/privacy/">개인정보처리방침</a><a href="/ko/terms/">이용약관</a></nav></div></footer>
+<script>document.addEventListener("click",function(e){document.querySelectorAll("details.lang-menu[open]").forEach(function(d){if(!d.contains(e.target))d.removeAttribute("open")})});</script>
+</body>
+</html>
