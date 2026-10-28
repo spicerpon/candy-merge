@@ -1,0 +1,139 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Candy Merge 2048 Guide — Candy Chain, Scoring and Watermelon Strategy</title>
+<meta name="description" content="The official Candy Merge 2048 guide: all eleven candies and their points, drop odds, how the dead line works, jar-management habits, and when to use Shake, Remove and Continue.">
+<link rel="canonical" href="https://kogames.dev/candy-merge/guide/">
+<link rel="alternate" hreflang="en" href="https://kogames.dev/candy-merge/guide/">
+<link rel="alternate" hreflang="ko" href="https://kogames.dev/candy-merge/guide/ko/">
+<link rel="alternate" hreflang="x-default" href="https://kogames.dev/candy-merge/guide/">
+<meta property="og:type" content="article">
+<meta property="og:site_name" content="KOGAMES">
+<meta property="og:title" content="Candy Merge 2048 Guide — Candy Chain, Scoring and Watermelon Strategy">
+<meta property="og:description" content="The official Candy Merge 2048 guide: all eleven candies and their points, drop odds, how the dead line works, jar-management habits, and when to use Shake, Remove and Continue.">
+<meta property="og:url" content="https://kogames.dev/candy-merge/guide/">
+<meta property="og:image" content="https://kogames.dev/candy-merge/assets/og.jpg">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="icon" href="/assets/favicon.png" type="image/png">
+<link rel="stylesheet" href="/assets/style.css">
+<style>
+.doc .lead{font-size:18px;color:var(--muted);margin:0 0 20px}
+.doc figure{margin:18px 0;border:1px solid var(--line);border-radius:var(--radius);overflow:hidden;background:var(--card)}
+.doc figure img{width:100%;height:auto}
+.doc figcaption{padding:10px 14px;font-size:13px;color:var(--muted)}
+.doc .tip{border-left:3px solid var(--accent);background:var(--card);padding:12px 16px;border-radius:0 12px 12px 0;margin:16px 0}
+.doc .tip p{margin:0}
+.doc .cta{display:flex;flex-wrap:wrap;gap:10px;margin:32px 0 0}
+.doc .kbd{font-family:ui-monospace,Menlo,Consolas,monospace;background:var(--bg-2);border:1px solid var(--line);border-radius:6px;padding:1px 7px;font-size:13px}
+.doc .chain{display:grid;grid-template-columns:repeat(auto-fill,minmax(92px,1fr));gap:8px;margin:14px 0 6px}
+.doc .chain div{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:10px 6px;text-align:center;font-size:12.5px;line-height:1.4}
+.doc .chain img{width:46px;height:46px;margin:0 auto 6px}
+.doc .chain b{display:block;color:var(--text)}
+.doc .chain small{color:var(--muted)}
+.doc .pieces{display:flex;flex-wrap:wrap;gap:10px;margin:14px 0 6px}
+.doc .pieces figure{margin:0;padding:8px;display:flex;flex-direction:column;align-items:center;gap:4px;min-width:72px}
+.doc .pieces figcaption{padding:0;font-size:12px}
+.doc .log h2{border-top:0;padding-top:0;margin:34px 0 4px;font-size:19px}
+.doc .log .date{color:var(--accent);font-size:13px;font-weight:700;letter-spacing:.08em;margin:0}
+.doc .log ul{margin:6px 0 0}
+.doc .meta a{color:var(--accent)}
+.doc table td:first-child{white-space:nowrap}
+</style>
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"Article","headline":"Candy Merge 2048 guide: the chain, the scoring and how to reach the Watermelon","description":"The official Candy Merge 2048 guide: all eleven candies and their points, drop odds, how the dead line works, jar-management habits, and when to use Shake, Remove and Continue.","inLanguage":"en","datePublished":"2026-10-28","dateModified":"2026-10-28","author":{"@type":"Organization","name":"KOGAMES","url":"https://kogames.dev/"},"publisher":{"@type":"Organization","name":"KOGAMES","url":"https://kogames.dev/"},"image":"https://kogames.dev/candy-merge/assets/og.jpg","mainEntityOfPage":"https://kogames.dev/candy-merge/guide/","about":{"@type":"VideoGame","name":"Candy Merge 2048","url":"https://kogames.dev/candy-merge/"}}</script>
+</head>
+<body>
+<header class="nav"><div class="wrap">
+  <a class="brand" href="/"><img class="brand-logo" src="/assets/logo.png" alt="KOGAMES" width="123" height="32"></a>
+  <ul><li class="hide-sm"><a href="/#games">Games</a></li><li><a href="/candy-merge/">Play Candy Merge</a></li><li class="hide-sm"><a href="/candy-merge/updates/">Updates</a></li><li class="lang-nav"><details class="lang-menu"><summary aria-label="Language"><svg class="globe" viewBox="0 0 24 24" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="1.8" d="M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18Zm-9 9h18M12 3c2.5 2.6 3.8 5.6 3.8 9s-1.3 6.4-3.8 9c-2.5-2.6-3.8-5.6-3.8-9S9.5 5.6 12 3Z"/></svg><span>English</span></summary><div class="lang-list"><a href="/candy-merge/guide/" lang="en" hreflang="en" aria-current="true">English</a><a href="/candy-merge/guide/ko/" lang="ko" hreflang="ko">한국어</a></div></details></li></ul>
+</div></header>
+<main class="wrap doc">
+<article>
+
+<p class="lang-switch"><a href="/candy-merge/guide/" aria-current="true">English</a><a href="/candy-merge/guide/ko/">한국어</a></p>
+<h1>Candy Merge 2048 guide: the chain, the scoring and how to reach the Watermelon</h1>
+<p class="meta">Updated October 28, 2026 · by KOGAMES · <a href="/candy-merge/">Play Candy Merge 2048</a> · <a href="/candy-merge/updates/">Update notes</a></p>
+<p class="lead">If you have played any "suika"-style merge game you already know the loop: drop a candy, two matching candies touch, they merge into the next one up, and the jar slowly fills. What decides whether you make the Watermelon or top out at a sad Coconut is mostly jar management. This guide lays out the exact chain, what every merge is worth, how the jar decides a game is over, and the handful of habits that separate a 3,000-point run from a 10,000-point one. All numbers come from the game's own balance file.</p>
+
+<nav class="toc" aria-label="Contents"><ol>
+<li><a href="#chain">The eleven candies</a></li><li><a href="#score">How scoring works</a></li>
+<li><a href="#drops">What you get to drop</a></li><li><a href="#jar">The jar and the dead line</a></li>
+<li><a href="#habits">Five habits that win games</a></li><li><a href="#items">Shake, Remove and Continue</a></li>
+<li><a href="#gems">Where gems come from</a></li><li><a href="#controls">Controls and auto-drop</a></li>
+<li><a href="#faq">Quick answers</a></li>
+</ol></nav>
+
+<h2 id="chain">The eleven candies</h2>
+<p>Every candy merges only with its twin and becomes the next one in the line. From the smallest to the Watermelon:</p>
+<div class="chain"><div><img src="/candy-merge/assets/candy/01.webp" alt="Blueberry candy" loading="lazy" width="46" height="46"><b>1. Blueberry</b><small>dropped only</small></div><div><img src="/candy-merge/assets/candy/02.webp" alt="Cherry candy" loading="lazy" width="46" height="46"><b>2. Cherry</b><small>+6 pts</small></div><div><img src="/candy-merge/assets/candy/03.webp" alt="Grape candy" loading="lazy" width="46" height="46"><b>3. Grape</b><small>+12 pts</small></div><div><img src="/candy-merge/assets/candy/04.webp" alt="Lemon candy" loading="lazy" width="46" height="46"><b>4. Lemon</b><small>+20 pts</small></div><div><img src="/candy-merge/assets/candy/05.webp" alt="Orange candy" loading="lazy" width="46" height="46"><b>5. Orange</b><small>+30 pts</small></div><div><img src="/candy-merge/assets/candy/06.webp" alt="Apple candy" loading="lazy" width="46" height="46"><b>6. Apple</b><small>+42 pts</small></div><div><img src="/candy-merge/assets/candy/07.webp" alt="Peach candy" loading="lazy" width="46" height="46"><b>7. Peach</b><small>+56 pts</small></div><div><img src="/candy-merge/assets/candy/08.webp" alt="Coconut candy" loading="lazy" width="46" height="46"><b>8. Coconut</b><small>+72 pts</small></div><div><img src="/candy-merge/assets/candy/09.webp" alt="Pineapple candy" loading="lazy" width="46" height="46"><b>9. Pineapple</b><small>+90 pts</small></div><div><img src="/candy-merge/assets/candy/10.webp" alt="Melon candy" loading="lazy" width="46" height="46"><b>10. Melon</b><small>+110 pts</small></div><div><img src="/candy-merge/assets/candy/11.webp" alt="Watermelon candy" loading="lazy" width="46" height="46"><b>11. Watermelon</b><small>+132 pts</small></div></div>
+<p>Two Watermelons touching is the only merge that does not create a bigger candy: both vanish, you score a big bonus and get 10 gems, and the jar suddenly has a lot of room again. Making a second Watermelon in the same game is the real "win" of Candy Merge.</p>
+
+<h2 id="score">How scoring works</h2>
+<p>You score when candies merge, never when you drop. A merge is worth <strong>twice the merge value</strong> of the candy it creates: a Cherry is 6 points, a Lemon 20, a Coconut 72, a Watermelon 132. Two Watermelons clearing each other pay <strong>332 points</strong>.</p>
+<p>Because every big candy is built from many small merges, the points add up along the way. Building one Watermelon from nothing (1,024 Blueberries' worth of candy) earns about 2,900 points in merges before the Watermelon itself. That is why a score under 1,000 usually means the jar filled up before anything large existed, and why scores climb quickly once you keep a jar alive long enough to hold two or three big candies at once.</p>
+
+<h2 id="drops">What you get to drop</h2>
+<p>The game only ever hands you the five smallest candies. The odds are weighted towards the small ones:</p>
+<table>
+<tr><th>Next candy</th><th>Chance</th></tr>
+<tr><td>Blueberry</td><td>about 24%</td></tr>
+<tr><td>Cherry</td><td>about 24%</td></tr>
+<tr><td>Grape</td><td>about 22%</td></tr>
+<tr><td>Lemon</td><td>about 17%</td></tr>
+<tr><td>Orange</td><td>about 12%</td></tr>
+</table>
+<p>The <strong>NEXT</strong> preview shows what comes after the candy in your hand. Use it: if an Orange is next, start clearing a spot beside your existing Orange now, not after it arrives.</p>
+
+<h2 id="jar">The jar and the dead line</h2>
+<p>The jar is 7.2 units wide and 9 deep; a Watermelon is 3.4 units across, so two of them already take up most of the width. Near the top there is a line. A candy that has <strong>settled</strong> above that line for <strong>1.2 seconds</strong> ends the game. Candies that are still falling, bouncing or sliding do not count, and nothing counts during the 3 seconds after a continue.</p>
+<p>In practice that means you lose when the pile is tall <em>and still</em>. A candy that pokes over the line while things are still moving gives you a moment to react — a merge lower down, or a Shake, can pull it back below the line before the timer runs out.</p>
+
+<h2 id="habits">Five habits that win games</h2>
+<ol>
+<li><strong>Keep big candies on one side, small on the other.</strong> The classic layout is a slope: Watermelon and Melon against the left wall, then descending sizes towards the right. Small drops land on the small side, merge upwards, and roll downhill into the big ones.</li>
+<li><strong>Never bury a small candy.</strong> A Blueberry trapped under a Pineapple is dead weight that can only be freed by a merge above it. If a small candy is about to be covered, spend a drop clearing it first.</li>
+<li><strong>Drop onto the match, not next to it.</strong> Physics in this game are soft: a candy dropped directly on top of its twin merges before it can roll away. Dropped beside it, it often slips into a gap instead.</li>
+<li><strong>Use the walls.</strong> A candy dropped at the very edge rolls inward along the slope. Use that to nudge a mid-size candy into its twin without disturbing the pile.</li>
+<li><strong>Merge big before small when you can choose.</strong> Clearing two Coconuts frees far more room than two Grapes, and room is what keeps the game alive.</li>
+</ol>
+<div class="tip"><p><strong>The one-move look-ahead.</strong> Before every drop, ask two questions: "what does this merge now?" and "what does it block later?" Most lost games come from a drop that merged nicely but sealed a small candy underneath it.</p></div>
+
+<h2 id="items">Shake, Remove and Continue</h2>
+<ul>
+<li><strong>Shake</strong> (30 gems, first one free each game) jolts the whole jar. Use it when a candy is sitting over the dead line with a gap it could slide into, or when two twins are a hair apart. It does nothing useful on a tightly packed pile.</li>
+<li><strong>Remove</strong> (20 gems, up to 3 per game) deletes one candy you tap. The best target is a small candy buried deep on the "big" side — removing it lets the heavy candies settle and often triggers a merge for free.</li>
+<li><strong>Continue</strong> when the game ends: the first one is free, then 100, 200, 300, 500 and 800 gems. You pick a spot and every candy in a circle around it is cleared, and you get 3 seconds of safety. Choosing the top of the tallest column is the obvious move; choosing a cluster of small candies on top of a big one is often better, because it leaves the big candy exposed for a merge.</li>
+</ul>
+
+<h2 id="gems">Where gems come from</h2>
+<table>
+<tr><th>Source</th><th>Gems</th></tr>
+<tr><td>End of every game</td><td>2, plus 1 per 1,500 points (max 10)</td></tr>
+<tr><td>New best score</td><td>+5</td></tr>
+<tr><td>Discovering a candy for the first time</td><td>+3 each</td></tr>
+<tr><td>Making a Watermelon</td><td>+10</td></tr>
+<tr><td>Treasure chest</td><td>+10 every 30 minutes</td></tr>
+<tr><td>Daily bonus</td><td>+10</td></tr>
+<tr><td>Watching a rewarded ad</td><td>+20, up to 5 times a day</td></tr>
+</table>
+<p>Gems are stored in your browser along with your scores, so they stay on the device you play on. Nothing in the game is sold for real money.</p>
+
+<h2 id="controls">Controls and auto-drop</h2>
+<p>On a phone, drag to aim and lift your finger to drop. On a keyboard, <span class="kbd">←</span> <span class="kbd">→</span> or <span class="kbd">A</span> <span class="kbd">D</span> move the candy and <span class="kbd">Space</span>, <span class="kbd">Enter</span> or <span class="kbd">↓</span> drop it. <strong>AUTO</strong> drops wherever you are aiming every 1.4 seconds; it is handy for farming the early chain but turn it off once the pile gets tall, because every drop then needs a decision.</p>
+
+<h2 id="faq">Quick answers</h2>
+<ul>
+<li><strong>Why didn't two identical candies merge?</strong> They have to touch while at least one of them is free to move. If both are wedged, nudge the pile with a nearby drop or a Shake.</li>
+<li><strong>Does the Watermelon ever drop from the top?</strong> No. Only the first five candies are dealt; everything larger must be built.</li>
+<li><strong>Is my score shared?</strong> Only if you enter a nickname for the world ranking; the ranking stores your best score and nickname, nothing else.</li>
+<li><strong>What is a good score?</strong> A first Watermelon usually lands you around 3,000–4,000. Keeping two Watermelons' worth of candy alive and clearing them pushes past 8,000.</li>
+</ul>
+<div class="cta"><a class="btn primary" href="/candy-merge/">Play Candy Merge 2048</a><a class="btn" href="/candy-merge/updates/">What's new</a><a class="btn" href="/">All KOGAMES games</a></div>
+
+</article>
+</main>
+<footer><div class="wrap"><div class="foot-left"><img class="foot-logo" src="/assets/logo.png" alt="KOGAMES" width="92" height="24" loading="lazy"><div>© 2026 KOGAMES. All rights reserved.</div></div><nav><a href="/candy-merge/">Candy Merge 2048</a><a href="/candy-merge/updates/">Updates</a><a href="/privacy/">Privacy</a><a href="/terms/">Terms</a></nav></div></footer>
+<script>document.addEventListener("click",function(e){document.querySelectorAll("details.lang-menu[open]").forEach(function(d){if(!d.contains(e.target))d.removeAttribute("open")})});</script>
+</body>
+</html>
